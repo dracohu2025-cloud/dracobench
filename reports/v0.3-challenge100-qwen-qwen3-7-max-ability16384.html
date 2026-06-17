@@ -1,0 +1,3528 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>DracoBench Report: qwen/qwen3.7-max</title>
+  <style>
+    :root {
+      --paper: #f6f1e7;
+      --ink: #151310;
+      --muted: #6b6254;
+      --line: #d7ccb9;
+      --panel: #fffaf0;
+      --pass: #0b7a5f;
+      --fail: #b23a48;
+      --blue: #245c9a;
+      --gold: #9b6900;
+      --shadow: 0 14px 38px rgba(30, 22, 12, 0.10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(90deg, rgba(21, 19, 16, 0.035) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(21, 19, 16, 0.035) 1px, transparent 1px),
+        var(--paper);
+      background-size: 28px 28px;
+      color: var(--ink);
+      font-family: "Avenir Next", "Noto Sans SC", "Source Han Sans SC", sans-serif;
+      line-height: 1.5;
+    }
+
+    header {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 30px 24px 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 38px;
+      line-height: 1.06;
+      letter-spacing: 0;
+    }
+
+    .model {
+      margin-top: 10px;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+
+    .report-nav {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .report-nav a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--blue);
+      font-weight: 700;
+      padding: 6px 10px;
+      text-decoration: none;
+      box-shadow: var(--shadow);
+    }
+
+    .report-nav a:hover {
+      text-decoration: underline;
+    }
+
+    .summary {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 12px 24px 24px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 250, 240, 0.94);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      min-height: 96px;
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .metric .value {
+      margin-top: 8px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 30px;
+      line-height: 1;
+    }
+
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px 32px;
+    }
+
+    section {
+      margin-top: 20px;
+    }
+
+    h2 {
+      font-size: 18px;
+      margin: 0 0 10px;
+      letter-spacing: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      background: #efe5d5;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .status-pass {
+      color: var(--pass);
+      font-weight: 700;
+    }
+
+    .status-fail {
+      color: var(--fail);
+      font-weight: 700;
+    }
+
+    .failures {
+      display: grid;
+      gap: 12px;
+    }
+
+    .failure, .qa-card {
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--fail);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .qa-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .qa-card {
+      border-left-color: var(--blue);
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .qa-card summary {
+      cursor: pointer;
+      padding: 12px 14px;
+      list-style-position: inside;
+      font-weight: 700;
+    }
+
+    .qa-card[open] summary {
+      border-bottom: 1px solid var(--line);
+      background: #f7eddd;
+    }
+
+    .qa-body {
+      padding: 12px 14px 14px;
+    }
+
+    .qa-meta {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+      overflow-wrap: anywhere;
+    }
+
+    .failure h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .failure-label {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .analysis {
+      margin-top: 8px;
+      border: 1px solid #e3c977;
+      border-left: 4px solid var(--gold);
+      border-radius: 8px;
+      background: #fff4cf;
+      padding: 10px 12px;
+      color: #3f3218;
+    }
+
+    pre {
+      margin: 8px 0 0;
+      max-height: 260px;
+      overflow: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      border-radius: 8px;
+      background: #1d1a16;
+      color: #f8ead0;
+      padding: 10px;
+    }
+
+    code, pre {
+      font-family: "SF Mono", "Cascadia Code", "Menlo", monospace;
+      font-size: 13px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    input[type="search"] {
+      width: min(460px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 10px 12px;
+      font: inherit;
+    }
+
+    @media (max-width: 900px) {
+      .summary {
+        grid-template-columns: repeat(2, minmax(140px, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>DracoBench Report: qwen/qwen3.7-max</h1>
+    <div class="model">qwen/qwen3.7-max</div>
+  </header>
+  <nav class="report-nav" aria-label="Report sections">
+    <a href="#by-suite">By Suite</a>
+    <a href="#failures">Failure Examples</a>
+    <a href="#all-qa">All Questions &amp; Answers</a>
+    <a href="#case-details">Case Details</a>
+  </nav>
+  <div class="summary">
+      <div class="metric"><div class="label">Pass rate</div><div class="value">94.0%</div></div>
+      <div class="metric"><div class="label">Cases</div><div class="value">94/100</div></div>
+      <div class="metric"><div class="label">Avg latency</div><div class="value">11653 ms</div></div>
+      <div class="metric"><div class="label">Total time</div><div class="value">19m 27s</div></div>
+      <div class="metric"><div class="label">Total cost</div><div class="value">$0.199764</div></div>
+      <div class="metric"><div class="label">Prompt tokens</div><div class="value">10627</div></div>
+      <div class="metric"><div class="label">Completion tokens</div><div class="value">49728</div></div>
+    <div class="metric"><div class="label">Reasoning tokens</div><div class="value">41243</div></div>
+    <div class="metric"><div class="label">Errors</div><div class="value">0</div></div>
+  </div>
+  <main>
+    <section id="by-suite">
+      <h2>By Suite</h2>
+      <table>
+        <thead><tr><th>Suite</th><th>Cases</th><th>Passed</th><th>Pass rate</th><th>Avg latency</th><th>Cost</th></tr></thead>
+        <tbody><tr data-suite="chinese_writing"><td><code>chinese_writing</code></td><td>4</td><td>4</td><td>100.0%</td><td>19215 ms</td><td>$0.015199</td></tr>
+<tr data-suite="coding"><td><code>coding</code></td><td>28</td><td>27</td><td>96.4%</td><td>19213 ms</td><td>$0.093060</td></tr>
+<tr data-suite="debugging"><td><code>debugging</code></td><td>19</td><td>18</td><td>94.7%</td><td>8702 ms</td><td>$0.029199</td></tr>
+<tr data-suite="instruction_following"><td><code>instruction_following</code></td><td>6</td><td>6</td><td>100.0%</td><td>14326 ms</td><td>$0.011349</td></tr>
+<tr data-suite="rag_long_context"><td><code>rag_long_context</code></td><td>18</td><td>14</td><td>77.8%</td><td>7032 ms</td><td>$0.021256</td></tr>
+<tr data-suite="reasoning"><td><code>reasoning</code></td><td>25</td><td>25</td><td>100.0%</td><td>6906 ms</td><td>$0.029701</td></tr></tbody>
+      </table>
+    </section>
+    <section id="failures">
+      <h2>Failure Examples</h2>
+      <div class="failures"><article class="failure" data-suite="coding">
+  <h3>challenge-coding-004</h3>
+  <div>Suite: <code>coding</code></div>
+  <div>Finish: <code>stop</code></div>
+  
+  <div class="failure-label">Prompt</div>
+  <pre>只输出 Python 代码，不要解释。实现 solve(capacity: int, ops: list[str]) -&gt; list[int]，模拟 LRU cache。ops 包含 &quot;put key value&quot; 和 &quot;get key&quot;。get 返回 value，不存在返回 -1。put 已存在 key 要更新并变成最近使用。容量为 0 时所有 get 都返回 -1。</pre>
+  
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+ops = [&#x27;put a 1&#x27;, &#x27;put b 2&#x27;, &#x27;get a&#x27;, &#x27;put c 3&#x27;, &#x27;get b&#x27;, &#x27;get a&#x27;, &#x27;get c&#x27;]
+assert solution.solve(2, ops) == [1, -1, 1, 3]
+assert solution.solve(0, [&#x27;put a 1&#x27;, &#x27;get a&#x27;]) == [-1]
+assert solution.solve(1, [&#x27;put a 1&#x27;, &#x27;put a 2&#x27;, &#x27;get a&#x27;]) == [2]</pre>
+  
+    <div class="failure-label">Mistake Analysis</div>
+    <div class="analysis">
+      <div><strong>Failure type:</strong> <code>runtime_type_assumption</code></div>
+      <div>题目里的 cache key 是字符串，例如 `a`、`b`、`c`，但模型把 key 强行写成 `int(parts[1])`。测试一遇到 `put a 1` 就在解析 `a` 时抛出 ValueError。根因是模型擅自补了“key 是整数”的类型假设。</div>
+    </div>
+  <div class="failure-label">Scorer Details</div>
+  <pre>{
+  &quot;returncode&quot;: 1,
+  &quot;stdout&quot;: &quot;&quot;,
+  &quot;stderr&quot;: &quot;Traceback (most recent call last):\n  File \&quot;/var/folders/x_/4cht1kfj1_j31gdv5w01sgmw0000gn/T/dracobench-code-fsy__7nf/test_solution.py\&quot;, line 4, in &lt;module&gt;\n    assert solution.solve(2, ops) == [1, -1, 1, 3]\n           ^^^^^^^^^^^^^^^^^^^^^^\n  File \&quot;/private/var/folders/x_/4cht1kfj1_j31gdv5w01sgmw0000gn/T/dracobench-code-fsy__7nf/solution.py\&quot;, line 16, in solve\n    key = int(parts[1])\n          ^^^^^^^^^^^^^\nValueError: invalid literal for int() with base 10: &#x27;a&#x27;\n&quot;
+}</pre>
+  <div class="failure-label">Output</div>
+  <pre>```python
+from collections import OrderedDict
+
+def solve(capacity: int, ops: list[str]) -&gt; list[int]:
+    cache = OrderedDict()
+    result = []
+    for op in ops:
+        parts = op.split()
+        if parts[0] == &quot;get&quot;:
+            key = int(parts[1])
+            if capacity == 0 or key not in cache:
+                result.append(-1)
+            else:
+                cache.move_to_end(key)
+                result.append(cache[key])
+        elif parts[0] == &quot;put&quot;:
+            key = int(parts[1])
+            value = int(parts[2])
+            if capacity == 0:
+                continue
+            if key in cache:
+                cache.move_to_end(key)
+                cache[key] = value
+            else:
+                if len(cache) &gt;= capacity:
+                    cache.popitem(last=False)
+                cache[key] = value
+    return result
+```</pre>
+</article>
+<article class="failure" data-suite="debugging">
+  <h3>challenge-debugging-001</h3>
+  <div>Suite: <code>debugging</code></div>
+  <div>Finish: <code>stop</code></div>
+  
+  <div class="failure-label">Prompt</div>
+  <pre>下面代码在 total 之后再次读取数据会变成空列表。请指出根因，并给出最小修复。最后单独一行写 FIX: &lt;修复后的第一行函数定义&gt;。
+
+```python
+def summarize(items=iter([1, 2, 3])):
+    return sum(items)
+```</pre>
+  
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+FIX:\s*`?\s*def\s+summarize\(items=None\)\s*:</pre>
+  
+    <div class="failure-label">Mistake Analysis</div>
+    <div class="analysis">
+      <div><strong>Failure type:</strong> <code>regex_miss</code></div>
+      <div>模型正确指出默认参数里的 iterator 会在第一次调用后被耗尽，但最后的 `FIX:` 行写成了 `def summarize(items=[1, 2, 3])`。当前 benchmark 期望的最小修复是把函数头改成 `def summarize(items=None):`，再在函数体内创建默认列表/迭代器。根因是模型修复了症状，但最终修复行没有采用标准的 None sentinel 写法，也引入了不推荐的可变默认参数形式。</div>
+    </div>
+  <div class="failure-label">Scorer Details</div>
+  <pre>{
+  &quot;pattern&quot;: &quot;FIX:\\s*`?\\s*def\\s+summarize\\(items=None\\)\\s*:&quot;
+}</pre>
+  <div class="failure-label">Output</div>
+  <pre>## 根因
+
+`iter([1, 2, 3])` 作为默认参数，在**函数定义时**只求值一次，创建一个迭代器对象。第一次调用 `sum(items)` 会耗尽该迭代器，之后再调用时迭代器已空，`sum` 返回 0。
+
+## 最小修复
+
+将默认参数改为可重复迭代的元组（或列表），避免使用一次性迭代器：
+
+```python
+def summarize(items=(1, 2, 3)):
+    return sum(items)
+```
+
+FIX: def summarize(items=(1, 2, 3)):</pre>
+</article>
+<article class="failure" data-suite="rag_long_context">
+  <h3>challenge-rag-001</h3>
+  <div>Suite: <code>rag_long_context</code></div>
+  <div>Finish: <code>stop</code></div>
+  
+  <div class="failure-label">Prompt</div>
+  <pre>只根据资料回答。
+
+资料 A：DracoBench v0.2 的目标是提高区分度，优先增加 coding、debugging、RAG 和 instruction_following 题。
+资料 B：DracoBench v0.2 不会默认使用 LLM-as-judge；开放中文写作题只做少量规则校验和人工抽检。
+资料 C：v0.2 的 HTML 报告必须展示通过率、成本、reasoning tokens、失败样例和逐题明细。
+
+问题：v0.2 为什么没有把 LLM-as-judge 作为默认判分？</pre>
+  
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 人工抽检
+At least one from each group: 默认使用 / 默认判分 / 默认采用 / 作为默认判分
+Forbidden phrases: 因为成本太高、因为不支持中文
+Length guidance (diagnostic only): min=n/a, max=160</pre>
+  
+    <div class="failure-label">Mistake Analysis</div>
+    <div class="analysis">
+      <div><strong>Failure type:</strong> <code>missing_required_info</code></div>
+      <div>问题问的是“为什么 v0.2 不把 LLM-as-judge 作为默认判分”。资料 B 给出的关键依据是：开放中文写作题只做少量规则校验和人工抽检。模型回答 `根据提供的资料，没有说明 v0.2 为什么没有把 LLM-as-judge 作为默认判分的原因。资料仅提及了“不会默认使用 LLM-as-judge”这一事实。` 只是复述“不会默认使用”或说资料未说明，没有说出替代判分方式里的“人工抽检”，因此缺少真正解释原因的证据链。</div>
+    </div>
+  <div class="failure-label">Scorer Details</div>
+  <pre>{
+  &quot;missing&quot;: [
+    &quot;人工抽检&quot;
+  ],
+  &quot;missing_any&quot;: [],
+  &quot;present_forbidden&quot;: [],
+  &quot;char_count&quot;: 80,
+  &quot;length_ok&quot;: true,
+  &quot;length_scored&quot;: false
+}</pre>
+  <div class="failure-label">Output</div>
+  <pre>根据提供的资料，没有说明 v0.2 为什么没有把 LLM-as-judge 作为默认判分的原因。资料仅提及了“不会默认使用 LLM-as-judge”这一事实。</pre>
+</article>
+<article class="failure" data-suite="rag_long_context">
+  <h3>challenge-rag-003</h3>
+  <div>Suite: <code>rag_long_context</code></div>
+  <div>Finish: <code>stop</code></div>
+  
+  <div class="failure-label">Prompt</div>
+  <pre>只根据资料回答。
+
+资料：一次评测中，K 模型在 smoke set 上 7/7，通过率 100%；在 hard set 上原始结果 47/50，其中 2 题后来被认定为题面歧义，单独复测通过。另有 1 题因 reasoning tokens 用尽而空输出。
+
+问题：更公平的文字结论应该如何描述 K 模型这次 hard set 表现？</pre>
+  
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 题面歧义
+At least one from each group: 47/50 / 47 题 / 47题；空输出 / 输出为空 / 未输出
+Forbidden phrases: 满分、完全失败
+Length guidance (diagnostic only): min=n/a, max=240</pre>
+  
+    <div class="failure-label">Mistake Analysis</div>
+    <div class="analysis">
+      <div><strong>Failure type:</strong> <code>missing_required_info</code></div>
+      <div>模型回答没有覆盖评分规则要求的完整证据链。每组至少一个依据表达：47/50 / 47 题 / 47题。这通常表示答案方向可能对，但没有把资料依据说清楚。</div>
+    </div>
+  <div class="failure-label">Scorer Details</div>
+  <pre>{
+  &quot;missing&quot;: [],
+  &quot;missing_any&quot;: [
+    [
+      &quot;47/50&quot;,
+      &quot;47 题&quot;,
+      &quot;47题&quot;
+    ]
+  ],
+  &quot;present_forbidden&quot;: [],
+  &quot;char_count&quot;: 100,
+  &quot;length_ok&quot;: true,
+  &quot;length_scored&quot;: false
+}</pre>
+  <div class="failure-label">Output</div>
+  <pre>K 模型在 hard set 上实际能力表现为 **49/50**（排除 2 题题面歧义后复测通过）；唯一未通过的 1 题系 reasoning tokens 用尽导致空输出，属资源限制而非能力不足。</pre>
+</article>
+<article class="failure" data-suite="rag_long_context">
+  <h3>challenge-rag-006</h3>
+  <div>Suite: <code>rag_long_context</code></div>
+  <div>Finish: <code>stop</code></div>
+  
+  <div class="failure-label">Prompt</div>
+  <pre>只根据资料回答。
+
+资料：一次失败分析显示，模型输出了 key = int(parts[1])，但测试数据里的 key 是字符串 a、b、c。报告认为这是“擅自补类型假设”，不是 token 截断。
+
+问题：这次失败的根因是什么？</pre>
+  
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: key
+At least one from each group: 字符串 / 类型不匹配；整数 / int；类型假设 / 假设 key 为整数 / 假设 key 是整数 / key 为整数类型
+Length guidance (diagnostic only): min=n/a, max=120</pre>
+  
+    <div class="failure-label">Mistake Analysis</div>
+    <div class="analysis">
+      <div><strong>Failure type:</strong> <code>missing_required_info</code></div>
+      <div>模型回答没有覆盖评分规则要求的完整证据链。必须出现的关键信息：key；每组至少一个依据表达：字符串 / 类型不匹配；整数 / int。这通常表示答案方向可能对，但没有把资料依据说清楚。</div>
+    </div>
+  <div class="failure-label">Scorer Details</div>
+  <pre>{
+  &quot;missing&quot;: [
+    &quot;key&quot;
+  ],
+  &quot;missing_any&quot;: [
+    [
+      &quot;字符串&quot;,
+      &quot;类型不匹配&quot;
+    ],
+    [
+      &quot;整数&quot;,
+      &quot;int&quot;
+    ]
+  ],
+  &quot;present_forbidden&quot;: [],
+  &quot;char_count&quot;: 8,
+  &quot;length_ok&quot;: true,
+  &quot;length_scored&quot;: false
+}</pre>
+  <div class="failure-label">Output</div>
+  <pre>擅自补类型假设。</pre>
+</article>
+<article class="failure" data-suite="rag_long_context">
+  <h3>challenge-rag-008</h3>
+  <div>Suite: <code>rag_long_context</code></div>
+  <div>Finish: <code>stop</code></div>
+  
+  <div class="failure-label">Prompt</div>
+  <pre>只根据资料回答。
+
+资料 A：早期草案说 v0.3 只新增 20 道题。
+资料 B：2026-06-16 的确认方案是 v0.3-challenge100，在现有 50 题基础上新增 50 道题。
+资料 C：新增题应先生成审题 HTML，确认后再跑模型，不要立即消耗 API。
+
+问题：下一步应该新增多少题？是否应该立刻跑模型？</pre>
+  
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 50、审题
+At least one from each group: 不跑 / 不要立刻 / 先不跑 / 不应立刻 / 不应该立刻 / 不应立即 / 不应该立即 / 不应立刻跑 / 不应该立刻跑 / 不应立即跑 / 不应该立即跑
+Length guidance (diagnostic only): min=n/a, max=160</pre>
+  
+    <div class="failure-label">Mistake Analysis</div>
+    <div class="analysis">
+      <div><strong>Failure type:</strong> <code>missing_required_info</code></div>
+      <div>模型回答没有覆盖评分规则要求的完整证据链。每组至少一个依据表达：不跑 / 不要立刻 / 先不跑 / 不应立刻 / 不应该立刻 / 不应立即 / 不应该立即 / 不应立刻跑 / 不应该立刻跑 / 不应立即跑 / 不应该立即跑。这通常表示答案方向可能对，但没有把资料依据说清楚。</div>
+    </div>
+  <div class="failure-label">Scorer Details</div>
+  <pre>{
+  &quot;missing&quot;: [],
+  &quot;missing_any&quot;: [
+    [
+      &quot;不跑&quot;,
+      &quot;不要立刻&quot;,
+      &quot;先不跑&quot;,
+      &quot;不应立刻&quot;,
+      &quot;不应该立刻&quot;,
+      &quot;不应立即&quot;,
+      &quot;不应该立即&quot;,
+      &quot;不应立刻跑&quot;,
+      &quot;不应该立刻跑&quot;,
+      &quot;不应立即跑&quot;,
+      &quot;不应该立即跑&quot;
+    ]
+  ],
+  &quot;present_forbidden&quot;: [],
+  &quot;char_count&quot;: 72,
+  &quot;length_ok&quot;: true,
+  &quot;length_scored&quot;: false
+}</pre>
+  <div class="failure-label">Output</div>
+  <pre>根据资料 B（确认方案），下一步应新增 **50 道题**。
+
+根据资料 C，**不应该**立刻跑模型，应先生成审题 HTML，确认后再跑模型。</pre>
+</article></div>
+    </section>
+    <section id="all-qa">
+      <h2>All Questions &amp; Answers</h2>
+      <div class="controls">
+        <input id="qa-search" type="search" placeholder="Search prompt, expected answer, model answer, case id, suite">
+      </div>
+      <div class="qa-list" id="qa-list"><details class="qa-card" id="qa-challenge-coding-001" data-suite="coding">
+  <summary><code>challenge-coding-001</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 20865 ms · Cost: $0.004163 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(lines: list[str]) -&gt; dict。lines 是简化 INI：空行和以 # 开头的行忽略；[section] 开始新 section；key=value 写入当前 section；key/value 两侧空白要去掉；同一 section 内重复 key 后者覆盖前者。返回嵌套 dict。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+lines = [&#x27;# comment&#x27;, &#x27;[db]&#x27;, &#x27; host = localhost &#x27;, &#x27;port=5432&#x27;, &#x27;&#x27;, &#x27;[feature]&#x27;, &#x27;enabled=true&#x27;, &#x27;enabled = false&#x27;]
+assert solution.solve(lines) == {&#x27;db&#x27;: {&#x27;host&#x27;: &#x27;localhost&#x27;, &#x27;port&#x27;: &#x27;5432&#x27;}, &#x27;feature&#x27;: {&#x27;enabled&#x27;: &#x27;false&#x27;}}
+assert solution.solve([&#x27;[x]&#x27;, &#x27;a=1&#x27;, &#x27;a=2&#x27;, &#x27;[y]&#x27;, &#x27;b = hi&#x27;]) == {&#x27;x&#x27;: {&#x27;a&#x27;: &#x27;2&#x27;}, &#x27;y&#x27;: {&#x27;b&#x27;: &#x27;hi&#x27;}}</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+def solve(lines: list[str]) -&gt; dict:
+    result = {}
+    current_section = &quot;&quot;
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith(&#x27;#&#x27;):
+            continue
+        if line.startswith(&#x27;[&#x27;) and line.endswith(&#x27;]&#x27;):
+            current_section = line[1:-1].strip()
+            if current_section not in result:
+                result[current_section] = {}
+        elif &#x27;=&#x27; in line:
+            if current_section not in result:
+                result[current_section] = {}
+            key, value = line.split(&#x27;=&#x27;, 1)
+            result[current_section][key.strip()] = value.strip()
+    return result
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-002" data-suite="coding">
+  <summary><code>challenge-coding-002</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 14779 ms · Cost: $0.002897 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(events: list[str]) -&gt; int。事件格式：&quot;&lt;id&gt; credit &lt;amount&gt;&quot; 增加余额，&quot;&lt;id&gt; debit &lt;amount&gt;&quot; 减少余额，&quot;rev &lt;id&gt;&quot; 撤销此前尚未撤销过的同 id 事件。重复交易 id 只保留第一次，未知撤销忽略。返回最终余额。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+events = [&#x27;a credit 100&#x27;, &#x27;b debit 40&#x27;, &#x27;a credit 999&#x27;, &#x27;rev b&#x27;, &#x27;c debit 10&#x27;]
+assert solution.solve(events) == 90
+events = [&#x27;x debit 5&#x27;, &#x27;rev y&#x27;, &#x27;rev x&#x27;, &#x27;rev x&#x27;, &#x27;z credit 7&#x27;]
+assert solution.solve(events) == 7</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+def solve(events: list[str]) -&gt; int:
+    balance = 0
+    seen_ids = {}
+    reversed_ids = set()
+    for event in events:
+        parts = event.split()
+        if parts[0] == &quot;rev&quot;:
+            rev_id = parts[1]
+            if rev_id in seen_ids and rev_id not in reversed_ids:
+                typ, amount = seen_ids[rev_id]
+                if typ == &quot;credit&quot;:
+                    balance -= amount
+                else:
+                    balance += amount
+                reversed_ids.add(rev_id)
+        else:
+            eid, typ, amount = parts[0], parts[1], int(parts[2])
+            if eid not in seen_ids:
+                seen_ids[eid] = (typ, amount)
+                if typ == &quot;credit&quot;:
+                    balance += amount
+                else:
+                    balance -= amount
+    return balance
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-003" data-suite="coding">
+  <summary><code>challenge-coding-003</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 26675 ms · Cost: $0.005345 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(deps: dict[str, list[str]]) -&gt; list[list[str]]。deps 表示 task -&gt; prerequisites。返回可并行执行的拓扑层，每层任务按字典序排序；如果存在环，返回空列表。所有只出现在 prerequisites 中的任务也要包含。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+deps = {&#x27;build&#x27;: [&#x27;lint&#x27;, &#x27;test&#x27;], &#x27;test&#x27;: [&#x27;install&#x27;], &#x27;lint&#x27;: [&#x27;install&#x27;]}
+assert solution.solve(deps) == [[&#x27;install&#x27;], [&#x27;lint&#x27;, &#x27;test&#x27;], [&#x27;build&#x27;]]
+assert solution.solve({&#x27;a&#x27;: [&#x27;b&#x27;], &#x27;b&#x27;: [&#x27;a&#x27;]}) == []
+assert solution.solve({&#x27;deploy&#x27;: [&#x27;build&#x27;], &#x27;build&#x27;: []}) == [[&#x27;build&#x27;], [&#x27;deploy&#x27;]]</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+def solve(deps: dict[str, list[str]]) -&gt; list[list[str]]:
+    all_tasks = set(deps.keys())
+    for prereqs in deps.values():
+        all_tasks.update(prereqs)
+
+    in_degree = {t: 0 for t in all_tasks}
+    adj = {t: [] for t in all_tasks}
+
+    for task, prereqs in deps.items():
+        for p in prereqs:
+            adj[p].append(task)
+            in_degree[task] += 1
+
+    queue = [t for t in all_tasks if in_degree[t] == 0]
+    result = []
+    processed = 0
+
+    while queue:
+        queue.sort()
+        result.append(queue)
+        processed += len(queue)
+        next_queue = []
+        for t in queue:
+            for neighbor in adj[t]:
+                in_degree[neighbor] -= 1
+                if in_degree[neighbor] == 0:
+                    next_queue.append(neighbor)
+        queue = next_queue
+
+    if processed != len(all_tasks):
+        return []
+
+    return result
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-004" data-suite="coding">
+  <summary><code>challenge-coding-004</code> <span class="status-fail">FAIL</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 24354 ms · Cost: $0.002861 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(capacity: int, ops: list[str]) -&gt; list[int]，模拟 LRU cache。ops 包含 &quot;put key value&quot; 和 &quot;get key&quot;。get 返回 value，不存在返回 -1。put 已存在 key 要更新并变成最近使用。容量为 0 时所有 get 都返回 -1。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+ops = [&#x27;put a 1&#x27;, &#x27;put b 2&#x27;, &#x27;get a&#x27;, &#x27;put c 3&#x27;, &#x27;get b&#x27;, &#x27;get a&#x27;, &#x27;get c&#x27;]
+assert solution.solve(2, ops) == [1, -1, 1, 3]
+assert solution.solve(0, [&#x27;put a 1&#x27;, &#x27;get a&#x27;]) == [-1]
+assert solution.solve(1, [&#x27;put a 1&#x27;, &#x27;put a 2&#x27;, &#x27;get a&#x27;]) == [2]</pre>
+    
+    <div class="failure-label">Mistake Analysis</div>
+    <div class="analysis">
+      <div><strong>Failure type:</strong> <code>runtime_type_assumption</code></div>
+      <div>题目里的 cache key 是字符串，例如 `a`、`b`、`c`，但模型把 key 强行写成 `int(parts[1])`。测试一遇到 `put a 1` 就在解析 `a` 时抛出 ValueError。根因是模型擅自补了“key 是整数”的类型假设。</div>
+    </div>
+    <div class="failure-label">Output</div>
+    <pre>```python
+from collections import OrderedDict
+
+def solve(capacity: int, ops: list[str]) -&gt; list[int]:
+    cache = OrderedDict()
+    result = []
+    for op in ops:
+        parts = op.split()
+        if parts[0] == &quot;get&quot;:
+            key = int(parts[1])
+            if capacity == 0 or key not in cache:
+                result.append(-1)
+            else:
+                cache.move_to_end(key)
+                result.append(cache[key])
+        elif parts[0] == &quot;put&quot;:
+            key = int(parts[1])
+            value = int(parts[2])
+            if capacity == 0:
+                continue
+            if key in cache:
+                cache.move_to_end(key)
+                cache[key] = value
+            else:
+                if len(cache) &gt;= capacity:
+                    cache.popitem(last=False)
+                cache[key] = value
+    return result
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-005" data-suite="coding">
+  <summary><code>challenge-coding-005</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 21107 ms · Cost: $0.002835 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(base: dict, patch: dict) -&gt; dict，执行 JSON Merge Patch：patch 中值为 None 表示删除该 key；两个值都是 dict 时递归合并；其他值覆盖。不能修改输入对象。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+base = {&#x27;a&#x27;: 1, &#x27;b&#x27;: {&#x27;x&#x27;: 1, &#x27;y&#x27;: 2}, &#x27;c&#x27;: 3}
+patch = {&#x27;b&#x27;: {&#x27;y&#x27;: None, &#x27;z&#x27;: 4}, &#x27;c&#x27;: None}
+assert solution.solve(base, patch) == {&#x27;a&#x27;: 1, &#x27;b&#x27;: {&#x27;x&#x27;: 1, &#x27;z&#x27;: 4}}
+assert base == {&#x27;a&#x27;: 1, &#x27;b&#x27;: {&#x27;x&#x27;: 1, &#x27;y&#x27;: 2}, &#x27;c&#x27;: 3}
+assert solution.solve({&#x27;a&#x27;: {&#x27;b&#x27;: 1}}, {&#x27;a&#x27;: 5}) == {&#x27;a&#x27;: 5}</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+def solve(base: dict, patch: dict) -&gt; dict:
+    result = dict(base)
+    for key, value in patch.items():
+        if value is None:
+            result.pop(key, None)
+        elif isinstance(value, dict) and isinstance(result.get(key), dict):
+            result[key] = solve(result[key], value)
+        else:
+            result[key] = value
+    return result
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-006" data-suite="coding">
+  <summary><code>challenge-coding-006</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 13936 ms · Cost: $0.002469 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(text: str) -&gt; int，把时长字符串转换成毫秒。支持整数单位 d、h、m、s、ms，可有空格，单位可重复，顺序任意。例如 &quot;1h 30m 500ms&quot;。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+assert solution.solve(&#x27;1h 30m 500ms&#x27;) == 5400500
+assert solution.solve(&#x27;2d 1h 2s&#x27;) == 176402000
+assert solution.solve(&#x27;100ms 2s 3ms&#x27;) == 2103</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+import re
+
+def solve(text: str) -&gt; int:
+    units = {&#x27;d&#x27;: 86400000, &#x27;h&#x27;: 3600000, &#x27;m&#x27;: 60000, &#x27;s&#x27;: 1000, &#x27;ms&#x27;: 1}
+    total = 0
+    for match in re.finditer(r&#x27;(\d+)\s*(ms|d|h|m|s)&#x27;, text):
+        total += int(match.group(1)) * units[match.group(2)]
+    return total
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-007" data-suite="coding">
+  <summary><code>challenge-coding-007</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 23067 ms · Cost: $0.004599 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(s: str) -&gt; bool，检查括号 ()[]{} 是否配对。单引号或双引号内部的括号忽略；反斜杠会转义引号。输入字符串可以包含普通字符。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+assert solution.solve(&#x27;{a:[(1)]}&#x27;) is True
+assert solution.solve(&quot;{&#x27;x&#x27;: &#x27;(]&#x27;}&quot;) is True
+assert solution.solve(&quot;[&#x27;unterminated]&quot;) is False
+assert solution.solve(&#x27;([)]&#x27;) is False
+assert solution.solve(&quot;\&quot;paren \\\&quot; ) still quoted\&quot;&quot;) is True</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+def solve(s: str) -&gt; bool:
+    stack = []
+    matching = {&#x27;)&#x27;: &#x27;(&#x27;, &#x27;]&#x27;: &#x27;[&#x27;, &#x27;}&#x27;: &#x27;{&#x27;}
+    opening = set(&#x27;([{&#x27;)
+    closing = set(&#x27;)]}&#x27;)
+    in_sq = False
+    in_dq = False
+    i = 0
+    while i &lt; len(s):
+        c = s[i]
+        if c == &#x27;\\&#x27; and i + 1 &lt; len(s):
+            i += 2
+            continue
+        if c == &#x27;&quot;&#x27; and not in_sq:
+            in_dq = not in_dq
+        elif c == &quot;&#x27;&quot; and not in_dq:
+            in_sq = not in_sq
+        elif not in_sq and not in_dq:
+            if c in opening:
+                stack.append(c)
+            elif c in closing:
+                if not stack or stack[-1] != matching[c]:
+                    return False
+                stack.pop()
+        i += 1
+    return len(stack) == 0
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-008" data-suite="coding">
+  <summary><code>challenge-coding-008</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 8985 ms · Cost: $0.001740 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(rows: list[dict]) -&gt; list[dict]。每行有 user、ts、value。对每个 user 保留 ts 最大的一行；若 ts 相同，保留在输入中更靠后的行。输出按 user 字典序排序。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+rows = [{&#x27;user&#x27;:&#x27;b&#x27;,&#x27;ts&#x27;:1,&#x27;value&#x27;:&#x27;old&#x27;}, {&#x27;user&#x27;:&#x27;a&#x27;,&#x27;ts&#x27;:2,&#x27;value&#x27;:&#x27;x&#x27;}, {&#x27;user&#x27;:&#x27;b&#x27;,&#x27;ts&#x27;:3,&#x27;value&#x27;:&#x27;new&#x27;}]
+assert solution.solve(rows) == [{&#x27;user&#x27;:&#x27;a&#x27;,&#x27;ts&#x27;:2,&#x27;value&#x27;:&#x27;x&#x27;}, {&#x27;user&#x27;:&#x27;b&#x27;,&#x27;ts&#x27;:3,&#x27;value&#x27;:&#x27;new&#x27;}]
+rows = [{&#x27;user&#x27;:&#x27;a&#x27;,&#x27;ts&#x27;:1,&#x27;value&#x27;:&#x27;first&#x27;}, {&#x27;user&#x27;:&#x27;a&#x27;,&#x27;ts&#x27;:1,&#x27;value&#x27;:&#x27;second&#x27;}]
+assert solution.solve(rows) == [{&#x27;user&#x27;:&#x27;a&#x27;,&#x27;ts&#x27;:1,&#x27;value&#x27;:&#x27;second&#x27;}]</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+def solve(rows: list[dict]) -&gt; list[dict]:
+    best = {}
+    for i, row in enumerate(rows):
+        user = row[&#x27;user&#x27;]
+        ts = row[&#x27;ts&#x27;]
+        if user not in best or (ts, i) &gt; (best[user][0], best[user][1]):
+            best[user] = (ts, i, row)
+    return [best[u][2] for u in sorted(best)]
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-debugging-001" data-suite="debugging">
+  <summary><code>challenge-debugging-001</code> <span class="status-fail">FAIL</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>debugging</code> · Latency: 14416 ms · Cost: $0.002407 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>下面代码在 total 之后再次读取数据会变成空列表。请指出根因，并给出最小修复。最后单独一行写 FIX: &lt;修复后的第一行函数定义&gt;。
+
+```python
+def summarize(items=iter([1, 2, 3])):
+    return sum(items)
+```</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+FIX:\s*`?\s*def\s+summarize\(items=None\)\s*:</pre>
+    
+    <div class="failure-label">Mistake Analysis</div>
+    <div class="analysis">
+      <div><strong>Failure type:</strong> <code>regex_miss</code></div>
+      <div>模型正确指出默认参数里的 iterator 会在第一次调用后被耗尽，但最后的 `FIX:` 行写成了 `def summarize(items=[1, 2, 3])`。当前 benchmark 期望的最小修复是把函数头改成 `def summarize(items=None):`，再在函数体内创建默认列表/迭代器。根因是模型修复了症状，但最终修复行没有采用标准的 None sentinel 写法，也引入了不推荐的可变默认参数形式。</div>
+    </div>
+    <div class="failure-label">Output</div>
+    <pre>## 根因
+
+`iter([1, 2, 3])` 作为默认参数，在**函数定义时**只求值一次，创建一个迭代器对象。第一次调用 `sum(items)` 会耗尽该迭代器，之后再调用时迭代器已空，`sum` 返回 0。
+
+## 最小修复
+
+将默认参数改为可重复迭代的元组（或列表），避免使用一次性迭代器：
+
+```python
+def summarize(items=(1, 2, 3)):
+    return sum(items)
+```
+
+FIX: def summarize(items=(1, 2, 3)):</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-debugging-002" data-suite="debugging">
+  <summary><code>challenge-debugging-002</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>debugging</code> · Latency: 7283 ms · Cost: $0.001236 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>下面代码期望统计每个用户的事件数，但所有用户计数会互相影响。请指出根因，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 defaultdict 初始化行&gt;。
+
+```python
+from collections import defaultdict
+shared = {&#x27;seen&#x27;: []}
+counts = defaultdict(lambda: shared)
+
+def add(user, event):
+    counts[user][&#x27;seen&#x27;].append(event)
+    return counts[user]
+```</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+FIX:\s*`?\s*counts\s*=\s*defaultdict\(lambda\s*:\s*\{&#x27;seen&#x27;\s*:\s*\[\]\}\)\s*`?</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>## 根因
+
+`defaultdict(lambda: shared)` 中的 `lambda` 每次都返回**同一个**字典对象 `shared`。因此所有用户的 key 都指向同一个 `{&#x27;seen&#x27;: []}`，对任一用户 `append` 事件，所有用户都能看到。
+
+## 最小修复
+
+将工厂函数改为每次调用时创建一个**新的**字典（含新的列表）：
+
+```python
+counts = defaultdict(lambda: {&#x27;seen&#x27;: []})
+```
+
+FIX: counts = defaultdict(lambda: {&#x27;seen&#x27;: []})</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-debugging-003" data-suite="debugging">
+  <summary><code>challenge-debugging-003</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>debugging</code> · Latency: 15248 ms · Cost: $0.003064 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>下面分页代码会漏掉最后不足 page_size 的一页。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 range 行&gt;。
+
+```python
+def pages(items, page_size):
+    out = []
+    for start in range(0, len(items) - page_size, page_size):
+        out.append(items[start:start + page_size])
+    return out
+```</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+FIX:\s*`?\s*for\s+start\s+in\s+range\(0,\s*len\(items\),\s*page_size\)\s*:</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>## Bug 分析
+
+`range(0, len(items) - page_size, page_size)` 的停止值是 `len(items) - page_size`，而 `range` 的 stop 是**排他**的。这导致当 `start` 到达或超过 `len(items) - page_size` 时循环就终止了，最后不足 `page_size` 的尾部元素被跳过。
+
+例如 `items=[1,2,3,4,5], page_size=2`：
+- `range(0, 3, 2)` → 只产生 `0, 2`，漏掉 `start=4` 的最后一页 `[5]`。
+
+## 最小修复
+
+将 `range` 的 stop 改为 `len(items)`，这样所有 `start &lt; len(items)` 的分页起点都会被遍历，Python 切片 `items[start:start+page_size]` 本身就能安全处理末尾不足 `page_size` 的情况。
+
+FIX: `    for start in range(0, len(items), page_size):`</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-debugging-004" data-suite="debugging">
+  <summary><code>challenge-debugging-004</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>debugging</code> · Latency: 6231 ms · Cost: $0.000950 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>下面代码期望把数字字符串按数值排序，但结果是字典序。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 return 行&gt;。
+
+```python
+def order(ids):
+    return sorted(ids)
+```</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+FIX:\s*`?\s*return\s+sorted\(ids,\s*key\s*=\s*int\)\s*`?</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>**Bug:** `sorted(ids)` 默认按字符串字典序比较，而非数值大小。例如 `&quot;10&quot;` 会排在 `&quot;2&quot;` 前面。
+
+**修复:** 添加 `key=int`，让排序时按整数值比较。
+
+FIX: return sorted(ids, key=int)</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-debugging-005" data-suite="debugging">
+  <summary><code>challenge-debugging-005</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>debugging</code> · Latency: 7503 ms · Cost: $0.001485 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>下面缓存装饰器会把不同参数的调用混在一起。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 key 赋值行&gt;。
+
+```python
+cache = {}
+def memo(fn):
+    def wrapper(*args, **kwargs):
+        key = fn.__name__
+        if key not in cache:
+            cache[key] = fn(*args, **kwargs)
+        return cache[key]
+    return wrapper
+```</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+FIX:\s*`?\s*key\s*=\s*\(fn\.__name__,\s*args,\s*(?:tuple\(sorted\(kwargs\.items\(\)\)\)|frozenset\(kwargs\.items\(\)\))\)\s*`?</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>## Bug
+
+`key` 只用了 `fn.__name__`，没有包含参数。同一函数的所有调用共享同一个缓存条目，导致不同参数返回第一次调用的结果。
+
+## 最小修复
+
+将参数也纳入 key：
+
+```python
+cache = {}
+def memo(fn):
+    def wrapper(*args, **kwargs):
+        key = (fn.__name__, args, tuple(sorted(kwargs.items())))
+        if key not in cache:
+            cache[key] = fn(*args, **kwargs)
+        return cache[key]
+    return wrapper
+```
+
+FIX: key = (fn.__name__, args, tuple(sorted(kwargs.items())))</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-debugging-006" data-suite="debugging">
+  <summary><code>challenge-debugging-006</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>debugging</code> · Latency: 6280 ms · Cost: $0.001169 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>下面代码期望浅拷贝列表后独立追加，但原列表也被修改。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 copy 行&gt;。
+
+```python
+def append_copy(items, value):
+    copied = items
+    copied.append(value)
+    return copied
+```</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+FIX:\s*`?\s*copied\s*=\s*(?:items\.copy\(\)|items\[:\]|list\(items\))\s*`?</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>## Bug 分析
+
+`copied = items` 并没有创建副本，只是让 `copied` 和 `items` 指向**同一个列表对象**。因此对 `copied` 的 `append` 操作会直接修改原列表。
+
+## 最小修复
+
+将赋值改为浅拷贝，例如使用 `list()`、`.copy()` 或切片 `[:]`。
+
+```python
+def append_copy(items, value):
+    copied = items.copy()
+    copied.append(value)
+    return copied
+```
+
+FIX: copied = items.copy()</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-debugging-007" data-suite="debugging">
+  <summary><code>challenge-debugging-007</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>debugging</code> · Latency: 7489 ms · Cost: $0.001354 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>下面代码期望解析 JSON 字符串，但传入已经是 dict 时会报错。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 data 赋值行&gt;。
+
+```python
+import json
+
+def load(payload):
+    data = json.loads(payload)
+    return data[&#x27;id&#x27;]
+```</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+FIX:\s*`?\s*data\s*=\s*(payload\s+if\s+isinstance\(payload,\s*dict\)\s+else\s+json\.loads\(payload\)|json\.loads\(payload\)\s+if\s+isinstance\(payload,\s*\(str,\s*bytes,\s*bytearray\)\)\s+else\s+payload|json\.loads\(payload\)\s+if\s+isinstance\(payload,\s*str\)\s+else\s+payload)\s*`?</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>## Bug 分析
+
+`json.loads(payload)` 只接受 `str` / `bytes` / `bytearray` 类型。当 `payload` 已经是 `dict` 时，会抛出 `TypeError: the JSON object must be str, bytes or bytearray, not dict`。
+
+## 最小修复
+
+在赋值前判断 `payload` 类型，若已是 `dict` 则直接使用，否则再调用 `json.loads`。
+
+FIX: data = payload if isinstance(payload, dict) else json.loads(payload)</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-debugging-008" data-suite="debugging">
+  <summary><code>challenge-debugging-008</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>debugging</code> · Latency: 8743 ms · Cost: $0.001564 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>下面代码期望 finally 后仍保留 try 中返回值，但实际总是返回 None。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;要删除或替换的 finally 行说明&gt;。
+
+```python
+def read_value():
+    try:
+        return 42
+    finally:
+        return None
+```</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Accepted answers:
+- 删除 finally 中的 return None
+- 去掉 finally 的 return None
+- 不要在 finally 里 return None
+- remove return None
+- 去掉 finally 中的 return None
+- 删除或替换 finally 中的 return None
+- 去掉 finally 中的 `return None`
+- 删除或替换 finally 中的 `return None`
+- 删除 finally 块中的 `return None`
+- 删除 finally 块中的 return None
+- 删除 finally 中的 `return None`
+- 删除 `finally` 块中的 `return None`
+- 删除 `finally` 中的 `return None`
+- 删除 `finally: return None`
+- 将 `finally:` 中的 `return None` 删除
+- finally 中的 return None 删除
+- finally: 中的 return None 删除
+- 删除 finally 块中的 &#x27;return None&#x27;
+- 删除 finally 子句中的 `return None`
+- 删除 finally 子句中的 return None
+- delete the line `return None` inside the finally block
+- delete the line return None inside the finally block
+- finally 块不应包含 return 语句
+- finally 块不应包含 return
+- finally 不应包含 return</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>## Bug 分析
+
+Python 中 `finally` 块里的 `return` 会**覆盖** `try` 块中的 `return`。因此 `return None` 把 `return 42` 的返回值丢弃了。
+
+## 最小修复
+
+删除 `finally` 块中的 `return None`（或整个 `finally` 块，如果不需要清理逻辑）：
+
+```python
+def read_value():
+    try:
+        return 42
+    finally:
+        pass  # 仅做清理，不使用 return
+```
+
+FIX: 删除 `return None`</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-001" data-suite="reasoning">
+  <summary><code>challenge-reasoning-001</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 4570 ms · Cost: $0.000645 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答最终数字：有 A、B、C、D 四个服务。A 每分钟处理 6 个请求，B 比 A 少 2 个，C 是 B 的 2 倍，D 是 A 和 C 的平均值。四个服务 5 分钟一共处理多少请求？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 125</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>125</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-002" data-suite="reasoning">
+  <summary><code>challenge-reasoning-002</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 18477 ms · Cost: $0.003710 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答一个字母：五个任务 A、B、C、D、E 排队。A 必须在 B 前，B 必须在 C 前；D 不能在两端；E 必须紧挨在 C 后面。在所有满足条件的队列中，按字典序最小的队列第三个任务是谁？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: D</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>D</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-003" data-suite="reasoning">
+  <summary><code>challenge-reasoning-003</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 3712 ms · Cost: $0.000629 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答最终数字：一个 4 位二进制数从 1011 开始，先左移一位并只保留低 4 位，再与 0110 做异或，最后转成十进制。结果是多少？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 0</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>0</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-004" data-suite="reasoning">
+  <summary><code>challenge-reasoning-004</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 4651 ms · Cost: $0.000846 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答最终数字：一个集合最初为 {1,2,3,4,5}。依次执行：删除所有偶数；加入 6 和 7；把每个元素乘以 2；删除大于 10 的元素。最终集合元素之和是多少？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 18</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>18</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-005" data-suite="reasoning">
+  <summary><code>challenge-reasoning-005</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 6718 ms · Cost: $0.001269 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答“可满足”或“不可满足”：有三个布尔变量 x、y、z。约束为：x 或 y 为真；如果 x 为真则 z 为假；如果 y 为真则 z 为真；x 和 y 不能同时为真。是否存在赋值满足全部约束？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 可满足</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>可满足</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-rag-001" data-suite="rag_long_context">
+  <summary><code>challenge-rag-001</code> <span class="status-fail">FAIL</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>rag_long_context</code> · Latency: 11206 ms · Cost: $0.001171 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只根据资料回答。
+
+资料 A：DracoBench v0.2 的目标是提高区分度，优先增加 coding、debugging、RAG 和 instruction_following 题。
+资料 B：DracoBench v0.2 不会默认使用 LLM-as-judge；开放中文写作题只做少量规则校验和人工抽检。
+资料 C：v0.2 的 HTML 报告必须展示通过率、成本、reasoning tokens、失败样例和逐题明细。
+
+问题：v0.2 为什么没有把 LLM-as-judge 作为默认判分？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 人工抽检
+At least one from each group: 默认使用 / 默认判分 / 默认采用 / 作为默认判分
+Forbidden phrases: 因为成本太高、因为不支持中文
+Length guidance (diagnostic only): min=n/a, max=160</pre>
+    
+    <div class="failure-label">Mistake Analysis</div>
+    <div class="analysis">
+      <div><strong>Failure type:</strong> <code>missing_required_info</code></div>
+      <div>问题问的是“为什么 v0.2 不把 LLM-as-judge 作为默认判分”。资料 B 给出的关键依据是：开放中文写作题只做少量规则校验和人工抽检。模型回答 `根据提供的资料，没有说明 v0.2 为什么没有把 LLM-as-judge 作为默认判分的原因。资料仅提及了“不会默认使用 LLM-as-judge”这一事实。` 只是复述“不会默认使用”或说资料未说明，没有说出替代判分方式里的“人工抽检”，因此缺少真正解释原因的证据链。</div>
+    </div>
+    <div class="failure-label">Output</div>
+    <pre>根据提供的资料，没有说明 v0.2 为什么没有把 LLM-as-judge 作为默认判分的原因。资料仅提及了“不会默认使用 LLM-as-judge”这一事实。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-rag-002" data-suite="rag_long_context">
+  <summary><code>challenge-rag-002</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>rag_long_context</code> · Latency: 8576 ms · Cost: $0.001660 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只根据资料回答，不要自行补充。
+
+资料：模型 Alpha 在 30 道 challenge 题中通过 24 道，成本 0.08 美元，平均延迟 9 秒。模型 Beta 通过 22 道，成本 0.02 美元，平均延迟 3 秒。资料没有给出两者在多模态任务上的表现。
+
+问题：如果要写低成本高吞吐摘要服务，资料更支持选择哪个模型？另外，多模态表现能否判断？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: Beta、成本、延迟、判断
+Forbidden phrases: Alpha 更适合、多模态更强
+Length guidance (diagnostic only): min=n/a, max=180</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>1. 资料更支持选择模型 Beta（成本更低，延迟更短）。
+2. 不能判断。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-rag-003" data-suite="rag_long_context">
+  <summary><code>challenge-rag-003</code> <span class="status-fail">FAIL</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>rag_long_context</code> · Latency: 10279 ms · Cost: $0.001949 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只根据资料回答。
+
+资料：一次评测中，K 模型在 smoke set 上 7/7，通过率 100%；在 hard set 上原始结果 47/50，其中 2 题后来被认定为题面歧义，单独复测通过。另有 1 题因 reasoning tokens 用尽而空输出。
+
+问题：更公平的文字结论应该如何描述 K 模型这次 hard set 表现？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 题面歧义
+At least one from each group: 47/50 / 47 题 / 47题；空输出 / 输出为空 / 未输出
+Forbidden phrases: 满分、完全失败
+Length guidance (diagnostic only): min=n/a, max=240</pre>
+    
+    <div class="failure-label">Mistake Analysis</div>
+    <div class="analysis">
+      <div><strong>Failure type:</strong> <code>missing_required_info</code></div>
+      <div>模型回答没有覆盖评分规则要求的完整证据链。每组至少一个依据表达：47/50 / 47 题 / 47题。这通常表示答案方向可能对，但没有把资料依据说清楚。</div>
+    </div>
+    <div class="failure-label">Output</div>
+    <pre>K 模型在 hard set 上实际能力表现为 **49/50**（排除 2 题题面歧义后复测通过）；唯一未通过的 1 题系 reasoning tokens 用尽导致空输出，属资源限制而非能力不足。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-rag-004" data-suite="rag_long_context">
+  <summary><code>challenge-rag-004</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>rag_long_context</code> · Latency: 4693 ms · Cost: $0.000589 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只根据资料回答，不要使用资料外知识。
+
+资料：报告字段包括 pass_rate、avg_latency_ms、total_cost、prompt_tokens、completion_tokens、reasoning_tokens。报告不包含模型训练数据来源，也不包含供应商真实利润率。
+
+问题：根据资料，能否从报告判断供应商利润率？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 不能、不包含、利润率
+Forbidden phrases: 可以判断、训练数据
+Length guidance (diagnostic only): min=n/a, max=100</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>不能。根据资料，报告不包含供应商真实利润率。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-if-001" data-suite="instruction_following">
+  <summary><code>challenge-if-001</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>instruction_following</code> · Latency: 2563 ms · Cost: $0.000425 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 JSON 对象，不要 Markdown。字段 status 必须是 &quot;review&quot;；字段 scores 必须是对象，包含 coding、debugging、rag 三个整数；字段 note 必须是不超过 12 个汉字的中文字符串。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected JSON schema:
+{
+  &quot;type&quot;: &quot;object&quot;,
+  &quot;required&quot;: [
+    &quot;status&quot;,
+    &quot;scores&quot;,
+    &quot;note&quot;
+  ],
+  &quot;additionalProperties&quot;: false,
+  &quot;properties&quot;: {
+    &quot;status&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;const&quot;: &quot;review&quot;
+    },
+    &quot;scores&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;required&quot;: [
+        &quot;coding&quot;,
+        &quot;debugging&quot;,
+        &quot;rag&quot;
+      ],
+      &quot;additionalProperties&quot;: false,
+      &quot;properties&quot;: {
+        &quot;coding&quot;: {
+          &quot;type&quot;: &quot;integer&quot;
+        },
+        &quot;debugging&quot;: {
+          &quot;type&quot;: &quot;integer&quot;
+        },
+        &quot;rag&quot;: {
+          &quot;type&quot;: &quot;integer&quot;
+        }
+      }
+    },
+    &quot;note&quot;: {
+      &quot;type&quot;: &quot;string&quot;
+    }
+  }
+}</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>{&quot;status&quot;: &quot;review&quot;, &quot;scores&quot;: {&quot;coding&quot;: 8, &quot;debugging&quot;: 7, &quot;rag&quot;: 9}, &quot;note&quot;: &quot;表现良好，需加强调试&quot;}</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-if-002" data-suite="instruction_following">
+  <summary><code>challenge-if-002</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>instruction_following</code> · Latency: 22978 ms · Cost: $0.002341 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 4 行，不要解释。第 1 行是 BEGIN，第 4 行是 END。第 2 行必须包含“模型评测”，第 3 行必须包含“HTML报告”。不能出现任何项目符号。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+^\s*BEGIN\s*\n[^\n]*模型评测[^\n]*\n[^\n]*HTML报告[^\n]*\nEND\s*$</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>BEGIN
+模型评测
+HTML报告
+END</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-if-003" data-suite="instruction_following">
+  <summary><code>challenge-if-003</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>instruction_following</code> · Latency: 9226 ms · Cost: $0.001770 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出一个中文句子，不能超过 28 个汉字。必须同时包含“难题”和“区分度”，不能包含“最强”“吊打”“遥遥领先”。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 难题、区分度
+Forbidden phrases: 最强、吊打、遥遥领先
+Length guidance (diagnostic only): min=n/a, max=28</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>这道难题具有很高的区分度。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-zh-writing-001" data-suite="chinese_writing">
+  <summary><code>challenge-zh-writing-001</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>chinese_writing</code> · Latency: 14235 ms · Cost: $0.002814 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>写一段不超过 120 个汉字的公众号结论，主题是“模型在简单题满分不代表真实强”。必须包含“简单题”“真实能力”“失败样例”，不能出现“吊打”。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 简单题、真实能力、失败样例
+Forbidden phrases: 吊打
+Length guidance (diagnostic only): min=n/a, max=120</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>模型在简单题拿满分，绝不代表其真实能力足够强。一旦遇到复杂场景，那些隐藏的失败样例便会暴露其短板。评估AI不能只看基础得分，更要深究其在极限挑战下的表现，这才是衡量模型实力的核心标准。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-zh-writing-002" data-suite="chinese_writing">
+  <summary><code>challenge-zh-writing-002</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>chinese_writing</code> · Latency: 6924 ms · Cost: $0.001233 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>把下面口语句改写成专业表达，不超过 80 个汉字：这个模型看起来很猛，但一遇到复杂调试就开始掉链子。必须包含“复杂调试”和“稳定性”，不能包含“猛”“掉链子”。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 复杂调试、稳定性
+Forbidden phrases: 猛、掉链子
+Length guidance (diagnostic only): min=n/a, max=80</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>该模型虽表面性能优异，但在复杂调试场景下稳定性显著不足。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-009" data-suite="coding">
+  <summary><code>challenge-coding-009</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 10709 ms · Cost: $0.001998 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(events: list[dict]) -&gt; dict[str, int]。每个事件包含 user、type、amount；type 为 &quot;add&quot; 或 &quot;remove&quot;。按 user 汇总 add 减 remove 后的库存，结果中去掉库存为 0 的用户，按 key 字典序返回普通 dict。amount 可能是字符串数字。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+events=[{&#x27;user&#x27;:&#x27;b&#x27;,&#x27;type&#x27;:&#x27;add&#x27;,&#x27;amount&#x27;:&#x27;5&#x27;},{&#x27;user&#x27;:&#x27;a&#x27;,&#x27;type&#x27;:&#x27;add&#x27;,&#x27;amount&#x27;:3},{&#x27;user&#x27;:&#x27;b&#x27;,&#x27;type&#x27;:&#x27;remove&#x27;,&#x27;amount&#x27;:2},{&#x27;user&#x27;:&#x27;a&#x27;,&#x27;type&#x27;:&#x27;remove&#x27;,&#x27;amount&#x27;:3}]
+assert solution.solve(events) == {&#x27;b&#x27;: 3}
+assert solution.solve([]) == {}
+assert solution.solve([{&#x27;user&#x27;:&#x27;x&#x27;,&#x27;type&#x27;:&#x27;remove&#x27;,&#x27;amount&#x27;:&#x27;2&#x27;}]) == {&#x27;x&#x27;: -2}</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+def solve(events: list[dict]) -&gt; dict[str, int]:
+    inventory = {}
+    for event in events:
+        user = event[&#x27;user&#x27;]
+        amount = int(event[&#x27;amount&#x27;])
+        if event[&#x27;type&#x27;] == &#x27;add&#x27;:
+            inventory[user] = inventory.get(user, 0) + amount
+        elif event[&#x27;type&#x27;] == &#x27;remove&#x27;:
+            inventory[user] = inventory.get(user, 0) - amount
+    return {k: v for k, v in sorted(inventory.items()) if v != 0}
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-010" data-suite="coding">
+  <summary><code>challenge-coding-010</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 18807 ms · Cost: $0.003744 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(expr: str) -&gt; int。expr 只包含非负整数、+、-、空格和括号，计算表达式结果。不要使用 eval。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+assert solution.solve(&#x27;1 + 2 - 3&#x27;) == 0
+assert solution.solve(&#x27;10 - (2 + 3) + 4&#x27;) == 9
+assert solution.solve(&#x27;(1+(4+5+2)-3)+(6+8)&#x27;) == 23</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+def solve(expr: str) -&gt; int:
+    tokens = []
+    i = 0
+    while i &lt; len(expr):
+        if expr[i].isspace():
+            i += 1
+        elif expr[i].isdigit():
+            j = i
+            while j &lt; len(expr) and expr[j].isdigit():
+                j += 1
+            tokens.append(int(expr[i:j]))
+            i = j
+        else:
+            tokens.append(expr[i])
+            i += 1
+
+    pos = [0]
+
+    def parse_expr():
+        result = parse_term()
+        while pos[0] &lt; len(tokens) and tokens[pos[0]] in (&#x27;+&#x27;, &#x27;-&#x27;):
+            op = tokens[pos[0]]
+            pos[0] += 1
+            right = parse_term()
+            if op == &#x27;+&#x27;:
+                result += right
+            else:
+                result -= right
+        return result
+
+    def parse_term():
+        if tokens[pos[0]] == &#x27;(&#x27;:
+            pos[0] += 1
+            result = parse_expr()
+            pos[0] += 1
+            return result
+        else:
+            result = tokens[pos[0]]
+            pos[0] += 1
+            return result
+
+    return parse_expr()
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-011" data-suite="coding">
+  <summary><code>challenge-coding-011</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 13253 ms · Cost: $0.002492 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(rows: list[str]) -&gt; list[tuple[str, int]]。每行格式为 &quot;name score&quot;，空白数量不定；同名保留最高分；输出按分数降序、同分按 name 升序。忽略空行。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+assert solution.solve([&#x27;alice 10&#x27;,&#x27;bob   12&#x27;,&#x27;alice 15&#x27;,&#x27;&#x27;,&#x27;bob 11&#x27;]) == [(&#x27;alice&#x27;,15),(&#x27;bob&#x27;,12)]
+assert solution.solve([&#x27;x -1&#x27;,&#x27;a -1&#x27;,&#x27;b 0&#x27;]) == [(&#x27;b&#x27;,0),(&#x27;a&#x27;,-1),(&#x27;x&#x27;,-1)]</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+def solve(rows: list[str]) -&gt; list[tuple[str, int]]:
+    best: dict[str, int] = {}
+    for row in rows:
+        row = row.strip()
+        if not row:
+            continue
+        parts = row.split()
+        name = &#x27; &#x27;.join(parts[:-1])
+        score = int(parts[-1])
+        if name not in best or score &gt; best[name]:
+            best[name] = score
+    result = list(best.items())
+    result.sort(key=lambda x: (-x[1], x[0]))
+    return result
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-012" data-suite="coding">
+  <summary><code>challenge-coding-012</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 9601 ms · Cost: $0.001808 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(pattern: str, text: str) -&gt; bool。pattern 支持 ? 匹配任意单字符，* 匹配任意长度字符串。必须匹配完整 text。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+assert solution.solve(&#x27;a*b?d&#x27;, &#x27;axxxbc d&#x27;.replace(&#x27; &#x27;,&#x27;&#x27;)) is True
+assert solution.solve(&#x27;a*c&#x27;, &#x27;ab&#x27;) is False
+assert solution.solve(&#x27;*&#x27;, &#x27;&#x27;) is True
+assert solution.solve(&#x27;file-??.txt&#x27;, &#x27;file-ab.txt&#x27;) is True</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+def solve(pattern: str, text: str) -&gt; bool:
+    m, n = len(pattern), len(text)
+    dp = [[False] * (n + 1) for _ in range(m + 1)]
+    dp[0][0] = True
+    for i in range(1, m + 1):
+        if pattern[i - 1] == &#x27;*&#x27;:
+            dp[i][0] = dp[i - 1][0]
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if pattern[i - 1] == &#x27;*&#x27;:
+                dp[i][j] = dp[i - 1][j] or dp[i][j - 1]
+            elif pattern[i - 1] == &#x27;?&#x27; or pattern[i - 1] == text[j - 1]:
+                dp[i][j] = dp[i - 1][j - 1]
+    return dp[m][n]
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-013" data-suite="coding">
+  <summary><code>challenge-coding-013</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 12260 ms · Cost: $0.002427 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(tree: dict) -&gt; list[str]。tree 是嵌套字典，叶子是字符串或数字。返回所有叶子的路径，路径用点连接，按字典序排序。例如 {&#x27;a&#x27;: {&#x27;b&#x27;: 1}} -&gt; [&#x27;a.b=1&#x27;]。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+assert solution.solve({&#x27;a&#x27;: {&#x27;b&#x27;: 1, &#x27;c&#x27;: &#x27;x&#x27;}, &#x27;d&#x27;: 2}) == [&#x27;a.b=1&#x27;,&#x27;a.c=x&#x27;,&#x27;d=2&#x27;]
+assert solution.solve({&#x27;z&#x27;: {&#x27;a&#x27;: {&#x27;b&#x27;: 3}}}) == [&#x27;z.a.b=3&#x27;]
+assert solution.solve({}) == []</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+def solve(tree: dict) -&gt; list[str]:
+    result = []
+    def traverse(node, path):
+        if isinstance(node, dict):
+            for k, v in node.items():
+                traverse(v, f&quot;{path}.{k}&quot; if path else str(k))
+        else:
+            result.append(f&quot;{path}={node}&quot;)
+    traverse(tree, &quot;&quot;)
+    return sorted(result)
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-014" data-suite="coding">
+  <summary><code>challenge-coding-014</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 48248 ms · Cost: $0.009050 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(nums: list[int]) -&gt; int。返回删除恰好一个元素后，剩余数组的最大连续子数组和。nums 长度至少为 2，可以全为负数。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+assert solution.solve([1,-2,0,3]) == 4
+assert solution.solve([1,-2,-2,3]) == 3
+assert solution.solve([-1,-1,-1]) == -1
+assert solution.solve([2,1,-2,3]) == 6</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+def solve(nums: list[int]) -&gt; int:
+    n = len(nums)
+    left = [0] * n
+    left[0] = nums[0]
+    for i in range(1, n):
+        left[i] = max(nums[i], left[i - 1] + nums[i])
+
+    right = [0] * n
+    right[n - 1] = nums[n - 1]
+    for i in range(n - 2, -1, -1):
+        right[i] = max(nums[i], right[i + 1] + nums[i])
+
+    max_left = [0] * n
+    max_left[0] = left[0]
+    for i in range(1, n):
+        max_left[i] = max(max_left[i - 1], left[i])
+
+    max_right = [0] * n
+    max_right[n - 1] = right[n - 1]
+    for i in range(n - 2, -1, -1):
+        max_right[i] = max(max_right[i + 1], right[i])
+
+    ans = float(&#x27;-inf&#x27;)
+    for i in range(n):
+        if i &gt; 0:
+            ans = max(ans, max_left[i - 1])
+        if i &lt; n - 1:
+            ans = max(ans, max_right[i + 1])
+        if 0 &lt; i &lt; n - 1:
+            ans = max(ans, left[i - 1] + right[i + 1])
+    return ans
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-debugging-009" data-suite="debugging">
+  <summary><code>challenge-debugging-009</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>debugging</code> · Latency: 9864 ms · Cost: $0.001847 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>下面代码期望把输入按逗号拆分并去掉空白，但会把空字段也保留下来。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 return 行&gt;。
+
+```python
+def parse(s):
+    return [part.strip() for part in s.split(&#x27;,&#x27;)]
+```</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+FIX:\s*`?\s*return\s+\[part\.strip\(\)\s+for\s+part\s+in\s+s\.split\(&#x27;\,&#x27;\)\s+if\s+part\.strip\(\)\]\s*`?</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>## Bug 分析
+
+当输入包含连续逗号（如 `&quot;a,,b&quot;`）或仅含空白的字段（如 `&quot;a, ,b&quot;`）时，`s.split(&#x27;,&#x27;)` 会产生空字符串 `&#x27;&#x27;`，而 `strip()` 后仍为空串，列表推导式没有过滤掉这些空字段。
+
+例如：
+```python
+parse(&quot;a,,b&quot;)   # 返回 [&#x27;a&#x27;, &#x27;&#x27;, &#x27;b&#x27;]，期望 [&#x27;a&#x27;, &#x27;b&#x27;]
+parse(&quot;a, ,b&quot;)  # 返回 [&#x27;a&#x27;, &#x27;&#x27;, &#x27;b&#x27;]，期望 [&#x27;a&#x27;, &#x27;b&#x27;]
+```
+
+## 最小修复
+
+在列表推导式中增加 `if part.strip()` 条件，过滤掉 strip 后为空的字段。
+
+FIX: return [part.strip() for part in s.split(&#x27;,&#x27;) if part.strip()]</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-debugging-010" data-suite="debugging">
+  <summary><code>challenge-debugging-010</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>debugging</code> · Latency: 19762 ms · Cost: $0.003846 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>下面代码期望用 UTC 时间戳排序，但字符串排序会错。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 sort 行&gt;。
+
+```python
+rows.sort(key=lambda r: r[&#x27;ts&#x27;])
+```</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Accepted answers:
+- datetime.fromisoformat
+- dateutil.parser
+- 解析 ts 后排序
+- parse ts
+- fromisoformat
+- int(r[&#x27;ts&#x27;])
+- float(r[&#x27;ts&#x27;])
+- key=lambda r: int(r[&#x27;ts&#x27;])
+- key=lambda r: float(r[&#x27;ts&#x27;])</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>## Bug 分析
+
+`r[&#x27;ts&#x27;]` 是字符串形式的 UTC 时间戳（如 Unix epoch `&quot;1673785800&quot;`）。字符串按字典序比较，会导致 `&quot;9...&quot; &gt; &quot;10...&quot;` 这类错误排序，与数值大小顺序不一致。
+
+## 最小修复
+
+将字符串转为数值再比较：
+
+```python
+rows.sort(key=lambda r: float(r[&#x27;ts&#x27;]))
+```
+
+FIX: rows.sort(key=lambda r: float(r[&#x27;ts&#x27;]))</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-debugging-011" data-suite="debugging">
+  <summary><code>challenge-debugging-011</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>debugging</code> · Latency: 10055 ms · Cost: $0.001370 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>下面代码在输入包含 0 时会误判为默认值 10。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 limit 赋值行&gt;。
+
+```python
+def query(limit=None):
+    limit = limit or 10
+    return list(range(limit))
+```</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+FIX:\s*`?\s*(?:limit\s*=\s*10\s+if\s+limit\s+is\s+None\s+else\s+limit|limit\s*=\s*limit\s+if\s+limit\s+is\s+not\s+None\s+else\s+10|if\s+limit\s+is\s+None\s*:\s*limit\s*=\s*10)\s*`?</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>## Bug 分析
+
+`limit = limit or 10` 利用了 Python 的 truthy/falsy 机制。当传入 `limit=0` 时，`0` 是 falsy 值，`0 or 10` 会返回 `10`，导致 `0` 被错误地替换为默认值。
+
+## 最小修复
+
+应显式判断 `None`，而非依赖 truthiness：
+
+```python
+def query(limit=None):
+    limit = limit if limit is not None else 10
+    return list(range(limit))
+```
+
+FIX: limit = limit if limit is not None else 10</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-debugging-012" data-suite="debugging">
+  <summary><code>challenge-debugging-012</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>debugging</code> · Latency: 5472 ms · Cost: $0.001004 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>下面代码期望复制嵌套配置后修改副本，但原配置也被修改。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 copied 赋值行&gt;。
+
+```python
+def update(config):
+    copied = dict(config)
+    copied[&#x27;db&#x27;][&#x27;host&#x27;] = &#x27;localhost&#x27;
+    return copied
+```</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+FIX:\s*`?\s*copied\s*=\s*(?:copy\.deepcopy\(config\)|__import__\([&#x27;\&quot;]copy[&#x27;\&quot;]\)\.deepcopy\(config\))\s*`?</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>## Bug 分析
+
+`dict(config)` 只做**浅拷贝**，`copied[&#x27;db&#x27;]` 和 `config[&#x27;db&#x27;]` 仍指向同一个嵌套字典对象，因此修改 `copied[&#x27;db&#x27;][&#x27;host&#x27;]` 会同时影响原配置。
+
+## 最小修复
+
+使用 `copy.deepcopy` 进行深拷贝：
+
+```python
+import copy
+
+def update(config):
+    copied = copy.deepcopy(config)
+    copied[&#x27;db&#x27;][&#x27;host&#x27;] = &#x27;localhost&#x27;
+    return copied
+```
+
+FIX: copied = copy.deepcopy(config)</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-debugging-013" data-suite="debugging">
+  <summary><code>challenge-debugging-013</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>debugging</code> · Latency: 7192 ms · Cost: $0.001170 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>下面代码期望找到第一个匹配项，但找不到时会抛 StopIteration。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 return 行&gt;。
+
+```python
+def find_user(users, name):
+    return next(u for u in users if u[&#x27;name&#x27;] == name)
+```</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+\*{0,2}FIX\*{0,2}:\*{0,2}\s*`?\s*return\s+next\(\(u\s+for\s+u\s+in\s+users\s+if\s+u\[&#x27;name&#x27;\]\s*==\s*name\),\s*None\)\s*`?</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>## Bug 分析
+
+`next()` 在没有提供默认值时，当生成器耗尽（即没有匹配项）会抛出 `StopIteration` 异常。
+
+## 最小修复
+
+给 `next()` 传入第二个参数作为默认值（如 `None`），这样找不到匹配项时会返回 `None` 而不是抛异常。
+
+FIX: return next((u for u in users if u[&#x27;name&#x27;] == name), None)</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-debugging-014" data-suite="debugging">
+  <summary><code>challenge-debugging-014</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>debugging</code> · Latency: 9028 ms · Cost: $0.001740 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>下面代码期望按请求顺序记录日志，但默认参数导致多次调用共用同一个列表。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的函数定义行&gt;。
+
+```python
+def log_request(req, logs=[]):
+    logs.append(req[&#x27;id&#x27;])
+    return logs
+```</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+FIX:\s*(?:```(?:python)?\s*)?`?\s*def\s+log_request\(req,\s*logs=None\)\s*:</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>## Bug 分析
+
+Python 的默认参数在**函数定义时**只求值一次。`logs=[]` 创建了一个可变对象（列表），所有未显式传入 `logs` 的调用都会共享同一个列表实例，导致日志跨调用累积。
+
+```python
+log_request({&#x27;id&#x27;: 1})  # [1]
+log_request({&#x27;id&#x27;: 2})  # [1, 2]  ← 期望是 [2]
+```
+
+## 最小修复
+
+将默认值改为 `None`，在函数体内按需创建新列表：
+
+```python
+def log_request(req, logs=None):
+    if logs is None:
+        logs = []
+    logs.append(req[&#x27;id&#x27;])
+    return logs
+```
+
+FIX: def log_request(req, logs=None):</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-006" data-suite="reasoning">
+  <summary><code>challenge-reasoning-006</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 6388 ms · Cost: $0.000930 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答最终数字：一个队列从左到右是 A,B,C,D,E。依次执行：把第 2 个移到末尾；删除第 3 个；在最前面插入 X；把最后两个反转。最终队列中 C 的位置是第几位？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 3</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>3</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-007" data-suite="reasoning">
+  <summary><code>challenge-reasoning-007</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 4566 ms · Cost: $0.000656 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答最终数字：某缓存命中率从 60% 提升到 75%。如果总请求数为 800，未命中请求减少了多少个？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 120</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>120</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-rag-005" data-suite="rag_long_context">
+  <summary><code>challenge-rag-005</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>rag_long_context</code> · Latency: 5550 ms · Cost: $0.001058 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只根据资料回答。
+
+资料：A 模型在 ability mode 中通过 46/50，成本 0.12 美元；在 efficiency mode 中通过 34/50，成本 0.04 美元。报告建议把 ability mode 用于能力判断，把 efficiency mode 用于成本和稳定性判断。
+
+问题：如果文章讨论“模型真实能力”，应该优先引用哪个模式？如果讨论“低预算可用性”，应该优先引用哪个模式？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: ability mode、efficiency mode、真实能力、低预算
+Forbidden phrases: 只看一个模式
+Length guidance (diagnostic only): min=n/a, max=180</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>- **模型真实能力**：优先引用 **ability mode**（报告建议用于能力判断）。
+- **低预算可用性**：优先引用 **efficiency mode**（报告建议用于成本和稳定性判断）。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-rag-006" data-suite="rag_long_context">
+  <summary><code>challenge-rag-006</code> <span class="status-fail">FAIL</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>rag_long_context</code> · Latency: 3181 ms · Cost: $0.000529 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只根据资料回答。
+
+资料：一次失败分析显示，模型输出了 key = int(parts[1])，但测试数据里的 key 是字符串 a、b、c。报告认为这是“擅自补类型假设”，不是 token 截断。
+
+问题：这次失败的根因是什么？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: key
+At least one from each group: 字符串 / 类型不匹配；整数 / int；类型假设 / 假设 key 为整数 / 假设 key 是整数 / key 为整数类型
+Length guidance (diagnostic only): min=n/a, max=120</pre>
+    
+    <div class="failure-label">Mistake Analysis</div>
+    <div class="analysis">
+      <div><strong>Failure type:</strong> <code>missing_required_info</code></div>
+      <div>模型回答没有覆盖评分规则要求的完整证据链。必须出现的关键信息：key；每组至少一个依据表达：字符串 / 类型不匹配；整数 / int。这通常表示答案方向可能对，但没有把资料依据说清楚。</div>
+    </div>
+    <div class="failure-label">Output</div>
+    <pre>擅自补类型假设。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-rag-007" data-suite="rag_long_context">
+  <summary><code>challenge-rag-007</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>rag_long_context</code> · Latency: 9792 ms · Cost: $0.001939 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只根据资料回答，不要自行补充。
+
+资料：DracoBench 的 HTML 报告目前展示 Summary、By Suite、Failure Examples 和 Case Details。Failure Examples 中包括 Prompt、Mistake Analysis、Scorer Details 和 Output。资料没有提到图表功能。
+
+问题：报告是否已经支持图表？回答时说明依据。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 图表、资料
+At least one from each group: 提到 / 提及
+Forbidden phrases: 已经支持、折线图、柱状图
+Length guidance (diagnostic only): min=n/a, max=100</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>根据资料，报告不支持（或未提及支持）图表。
+
+**依据**：资料明确指出“资料没有提到图表功能”，且列出的 HTML 报告展示内容（Summary、By Suite、Failure Examples 和 Case Details）及其子项中均不包含图表。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-if-004" data-suite="instruction_following">
+  <summary><code>challenge-if-004</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>instruction_following</code> · Latency: 11858 ms · Cost: $0.002340 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 JSON 对象。字段 mode 必须是 &quot;ability&quot;；字段 limits 必须是对象，包含 max_tokens:4096 和 temperature:0；字段 warnings 必须是正好两个字符串组成的数组。不要 Markdown。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected JSON schema:
+{
+  &quot;type&quot;: &quot;object&quot;,
+  &quot;required&quot;: [
+    &quot;mode&quot;,
+    &quot;limits&quot;,
+    &quot;warnings&quot;
+  ],
+  &quot;additionalProperties&quot;: false,
+  &quot;properties&quot;: {
+    &quot;mode&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;const&quot;: &quot;ability&quot;
+    },
+    &quot;limits&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;required&quot;: [
+        &quot;max_tokens&quot;,
+        &quot;temperature&quot;
+      ],
+      &quot;additionalProperties&quot;: false,
+      &quot;properties&quot;: {
+        &quot;max_tokens&quot;: {
+          &quot;type&quot;: &quot;integer&quot;,
+          &quot;const&quot;: 4096
+        },
+        &quot;temperature&quot;: {
+          &quot;type&quot;: &quot;integer&quot;,
+          &quot;const&quot;: 0
+        }
+      }
+    },
+    &quot;warnings&quot;: {
+      &quot;type&quot;: &quot;array&quot;,
+      &quot;minItems&quot;: 2,
+      &quot;maxItems&quot;: 2,
+      &quot;items&quot;: {
+        &quot;type&quot;: &quot;string&quot;
+      }
+    }
+  }
+}</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>{&quot;mode&quot;: &quot;ability&quot;, &quot;limits&quot;: {&quot;max_tokens&quot;: 4096, &quot;temperature&quot;: 0}, &quot;warnings&quot;: [&quot;first warning&quot;, &quot;second warning&quot;]}</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-if-005" data-suite="instruction_following">
+  <summary><code>challenge-if-005</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>instruction_following</code> · Latency: 7881 ms · Cost: $0.001479 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Markdown 表格，必须有 3 列：模式、用途、风险。必须包含 ability mode 和 efficiency mode 两行。不能添加表格外说明。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+^\s*\|\s*模式\s*\|\s*用途\s*\|\s*风险\s*\|\s*\n\s*\|\s*-+\s*\|\s*-+\s*\|\s*-+\s*\|[\s\S]*ability mode[\s\S]*efficiency mode[\s\S]*$</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>| 模式 | 用途 | 风险 |
+|---|---|---|
+| ability mode | 处理复杂逻辑推理与高质量内容生成 | 响应延迟较高，计算资源消耗大 |
+| efficiency mode | 快速响应简单查询与高并发轻量级任务 | 复杂任务准确率下降，缺乏深度分析 |</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-zh-writing-003" data-suite="chinese_writing">
+  <summary><code>challenge-zh-writing-003</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>chinese_writing</code> · Latency: 25693 ms · Cost: $0.005050 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>写一段不超过 140 个汉字的公众号小结，主题是“为什么要同时展示原题、模型输出和错误解释”。必须包含“原题”“错误解释”“可复查”，不能出现“玄学”。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 原题、错误解释、可复查
+Forbidden phrases: 玄学
+Length guidance (diagnostic only): min=n/a, max=140</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>评估大模型时，同时展示原题、模型输出与错误解释至关重要。这不仅能直观呈现真实表现，还能清晰暴露推理缺陷。提供原题和错误解释，确保测试过程透明且可复查，拒绝黑盒盲测，帮助读者客观洞察模型能力边界。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-008" data-suite="reasoning">
+  <summary><code>challenge-reasoning-008</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 9548 ms · Cost: $0.000905 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答最终数字：变量初始为 x=2, y=5, z=1。若 x&lt;y，交换 x 和 y；然后令 z=z+x-y；若 z 为偶数，令 y=y+z，否则令 x=x+z。最终 x+y+z 等于多少？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 15</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>15</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-009" data-suite="reasoning">
+  <summary><code>challenge-reasoning-009</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 24688 ms · Cost: $0.004980 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答一个字母：任务 A、B、C、D、E、F 排列。C 必须紧挨在 A 后面；B 必须在 D 前；D 必须在 F 前；F 必须最后；E 不能第一。在所有满足条件的排列中字典序最小的排列，第三个任务是谁？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: B</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>B</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-010" data-suite="reasoning">
+  <summary><code>challenge-reasoning-010</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 6962 ms · Cost: $0.001116 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答“可满足”或“不可满足”：布尔变量 x、y、z 满足：x 和 y 恰好一个为真；如果 x 为真则 z 为真；如果 y 为真则 z 为假；z 为真。是否存在赋值满足全部约束？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 可满足</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>可满足</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-011" data-suite="reasoning">
+  <summary><code>challenge-reasoning-011</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 5379 ms · Cost: $0.000951 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答最终数字：列表 [2,4,6,8] 中每个数先减去它的位置编号（从 1 开始），然后删除所有奇数，再把剩余数平方，最后求和。结果是多少？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 20</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>20</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-012" data-suite="reasoning">
+  <summary><code>challenge-reasoning-012</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 5491 ms · Cost: $0.000997 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答最终数字：一个 5 位二进制数 10110 先循环右移 1 位，再与 00111 做异或，最后转成十进制。结果是多少？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 12</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>12</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-013" data-suite="reasoning">
+  <summary><code>challenge-reasoning-013</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 3183 ms · Cost: $0.000526 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答一个字母：模型 A 通过 18 题、成本 0.06；模型 B 通过 20 题、成本 0.10；模型 C 通过 16 题、成本 0.04。按“通过题数/成本”最高选择，应该选哪个模型？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: C</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>C</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-014" data-suite="reasoning">
+  <summary><code>challenge-reasoning-014</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 3764 ms · Cost: $0.000421 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答最终数字：同一套 100 道题中，失败题数从 12 降到 7。错误率降低了多少个百分点？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 5</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>5</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-015" data-suite="reasoning">
+  <summary><code>challenge-reasoning-015</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 4841 ms · Cost: $0.000776 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答最终数字：集合 S 初始为 {a,b,c,d}。删除字母序在 c 之前的元素；加入 e 和 b；再删除所有元音字母。最终集合有几个元素？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 3</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>3</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-016" data-suite="reasoning">
+  <summary><code>challenge-reasoning-016</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 6313 ms · Cost: $0.000850 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答最终数字：3x3 矩阵按行是 1 2 3 / 4 5 6 / 7 8 9。顺时针旋转 90 度后，第二行元素之和是多少？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 15</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>15</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-017" data-suite="reasoning">
+  <summary><code>challenge-reasoning-017</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 5851 ms · Cost: $0.001155 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答最终数字：依赖关系为 a 无依赖；b 依赖 a；c 依赖 a；d 依赖 b 和 c；e 依赖 b；f 依赖 d 和 e；g 依赖 a。按可并行执行的拓扑层划分，第二层有几个任务？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 3</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>3</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-018" data-suite="reasoning">
+  <summary><code>challenge-reasoning-018</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 4127 ms · Cost: $0.000711 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答星期几：第 0 天是星期二。每 7 天循环一次。第 17 天是星期几？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 星期五</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>星期五</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-019" data-suite="reasoning">
+  <summary><code>challenge-reasoning-019</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 9326 ms · Cost: $0.001774 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答最终数字：用 A、B、C 组成长度为 3 的字符串，要求恰好包含一个 A，并且最后一个字符不能是 C。满足条件的字符串有多少个？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 8</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>8</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-020" data-suite="reasoning">
+  <summary><code>challenge-reasoning-020</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 4952 ms · Cost: $0.000839 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答最终数字：栈操作从空栈开始。push n 表示入栈；dup 复制栈顶；add 弹出两个数并压入它们的和；swap 交换栈顶两个数；sub 先弹出 x 再弹出 y，并压入 y-x。依次执行：push 2, push 3, dup, add, push 4, swap, sub。最终栈顶是多少？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: -2</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>-2</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-021" data-suite="reasoning">
+  <summary><code>challenge-reasoning-021</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 6360 ms · Cost: $0.001220 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答最终数字：三个队列 Q1、Q2、Q3 初始长度分别为 2、1、0。每一轮先从所有非空队列各处理 1 个元素，然后向 Q3 加入 2 个元素。执行 3 轮后，三个队列总长度是多少？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 4</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>4</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-022" data-suite="reasoning">
+  <summary><code>challenge-reasoning-022</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 5444 ms · Cost: $0.000884 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答最终数字：映射初始为 {a:1, b:2}。依次执行：设置 c=a+b；设置 a=c-b；删除 b；设置 d=a+c。最终所有 value 之和是多少？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 8</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>8</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-023" data-suite="reasoning">
+  <summary><code>challenge-reasoning-023</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 8798 ms · Cost: $0.001439 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答“甲”“乙”或“丙”：甲说“乙说的是真话”；乙说“丙说的是假话”；丙说“甲说的是假话”。如果恰好一人说真话，说真话的人是谁？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 丙</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>丙</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-024" data-suite="reasoning">
+  <summary><code>challenge-reasoning-024</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 3847 ms · Cost: $0.000687 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答一个字母：综合分 = 通过率百分数 - 成本乘以 10。模型 A 通过率 92%、成本 0.20；模型 B 通过率 88%、成本 0.05；模型 C 通过率 90%、成本 0.10。综合分最高的是哪个模型？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: A</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>A</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-reasoning-025" data-suite="reasoning">
+  <summary><code>challenge-reasoning-025</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>reasoning</code> · Latency: 4685 ms · Cost: $0.000784 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只回答最终三位数：一个三位数的百位为 a、十位为 b、个位为 c。已知 a+b+c=13，a=c+1，b=2c。这个三位数是多少？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Answer: 463</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>463</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-015" data-suite="coding">
+  <summary><code>challenge-coding-015</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 48838 ms · Cost: $0.007980 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(line: str) -&gt; list[str]，解析一行简化 CSV：逗号分隔；字段可以用双引号包裹；引号内逗号保留；引号内两个连续双引号表示一个双引号；空字段保留；空格是普通字符，不要自动 trim。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+assert solution.solve(&#x27;a,&quot;b,c&quot;,d&#x27;) == [&#x27;a&#x27;, &#x27;b,c&#x27;, &#x27;d&#x27;]
+assert solution.solve(&#x27;&quot;a&quot;&quot;b&quot;,,x&#x27;) == [&#x27;a&quot;b&#x27;, &#x27;&#x27;, &#x27;x&#x27;]
+assert solution.solve(&#x27;  a ,&quot; b &quot; &#x27;) == [&#x27;  a &#x27;, &#x27; b  &#x27;]</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+def solve(line: str) -&gt; list[str]:
+    fields = []
+    current = []
+    in_quotes = False
+    i = 0
+    while i &lt; len(line):
+        c = line[i]
+        if in_quotes:
+            if c == &#x27;&quot;&#x27;:
+                if i + 1 &lt; len(line) and line[i + 1] == &#x27;&quot;&#x27;:
+                    current.append(&#x27;&quot;&#x27;)
+                    i += 2
+                    continue
+                else:
+                    in_quotes = False
+                    i += 1
+                    continue
+            else:
+                current.append(c)
+                i += 1
+                continue
+        else:
+            if c == &#x27;&quot;&#x27; and len(current) == 0:
+                in_quotes = True
+                i += 1
+                continue
+            elif c == &#x27;,&#x27;:
+                fields.append(&#x27;&#x27;.join(current))
+                current = []
+                i += 1
+                continue
+            else:
+                current.append(c)
+                i += 1
+                continue
+    fields.append(&#x27;&#x27;.join(current))
+    return fields
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-016" data-suite="coding">
+  <summary><code>challenge-coding-016</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 12679 ms · Cost: $0.002255 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(intervals: list[tuple[int, int]]) -&gt; list[tuple[int, int]]。intervals 是整数闭区间，先按起点排序；重叠或端点相邻的区间要合并，例如 [1,2] 和 [3,4] 合并为 [1,4]。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+assert solution.solve([(5,7),(1,2),(3,4),(10,10)]) == [(1,7),(10,10)]
+assert solution.solve([(1,1),(3,3)]) == [(1,1),(3,3)]
+assert solution.solve([]) == []</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+def solve(intervals: list[tuple[int, int]]) -&gt; list[tuple[int, int]]:
+    if not intervals:
+        return []
+    intervals = sorted(intervals, key=lambda x: x[0])
+    merged = [list(intervals[0])]
+    for start, end in intervals[1:]:
+        if start &lt;= merged[-1][1] + 1:
+            merged[-1][1] = max(merged[-1][1], end)
+        else:
+            merged.append([start, end])
+    return [tuple(iv) for iv in merged]
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-017" data-suite="coding">
+  <summary><code>challenge-coding-017</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 18534 ms · Cost: $0.003687 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(events: list[tuple[str, int]], window: int, limit: int) -&gt; list[bool]，模拟按用户限流。events 按时间非降序排列。某用户在当前事件时间 ts 的窗口 (ts-window, ts] 内，已放行事件数少于 limit 才放行；被拒绝的事件不计入窗口。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+events=[(&#x27;a&#x27;,1),(&#x27;a&#x27;,2),(&#x27;a&#x27;,3),(&#x27;a&#x27;,4),(&#x27;a&#x27;,8)]
+assert solution.solve(events, 5, 2) == [True, True, False, False, True]
+assert solution.solve([(&#x27;x&#x27;,10),(&#x27;x&#x27;,11),(&#x27;x&#x27;,16)], 5, 1) == [True, False, True]</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+from bisect import bisect_right
+from collections import defaultdict
+
+def solve(events: list[tuple[str, int]], window: int, limit: int) -&gt; list[bool]:
+    allowed = defaultdict(list)
+    result = []
+    for user, ts in events:
+        lst = allowed[user]
+        idx = bisect_right(lst, ts - window)
+        if len(lst) - idx &lt; limit:
+            lst.append(ts)
+            result.append(True)
+        else:
+            result.append(False)
+    return result
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-018" data-suite="coding">
+  <summary><code>challenge-coding-018</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 9884 ms · Cost: $0.001932 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(path: str) -&gt; str，规范化绝对 Unix 路径：处理重复斜杠、.、..；.. 在根目录时仍留在根目录；返回结果必须以 / 开头且除根目录外不能以 / 结尾。不要使用 os.path。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+assert solution.solve(&#x27;/a//b/./c/../&#x27;) == &#x27;/a/b&#x27;
+assert solution.solve(&#x27;/../../x&#x27;) == &#x27;/x&#x27;
+assert solution.solve(&#x27;/&#x27;) == &#x27;/&#x27;</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+def solve(path: str) -&gt; str:
+    stack = []
+    for part in path.split(&#x27;/&#x27;):
+        if part == &#x27;&#x27; or part == &#x27;.&#x27;:
+            continue
+        elif part == &#x27;..&#x27;:
+            if stack:
+                stack.pop()
+        else:
+            stack.append(part)
+    return &#x27;/&#x27; + &#x27;/&#x27;.join(stack)
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-019" data-suite="coding">
+  <summary><code>challenge-coding-019</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 10614 ms · Cost: $0.002119 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(words: list[str]) -&gt; list[list[str]]，按变位词分组。大小写敏感；组内保持输入顺序；组的顺序按该组第一个单词在输入中出现的位置。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+assert solution.solve([&#x27;eat&#x27;,&#x27;tea&#x27;,&#x27;tan&#x27;,&#x27;ate&#x27;,&#x27;nat&#x27;,&#x27;bat&#x27;]) == [[&#x27;eat&#x27;,&#x27;tea&#x27;,&#x27;ate&#x27;], [&#x27;tan&#x27;,&#x27;nat&#x27;], [&#x27;bat&#x27;]]
+assert solution.solve([&#x27;b&#x27;,&#x27;B&#x27;,&#x27;bb&#x27;]) == [[&#x27;b&#x27;], [&#x27;B&#x27;], [&#x27;bb&#x27;]]</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+def solve(words: list[str]) -&gt; list[list[str]]:
+    groups = {}
+    for word in words:
+        key = tuple(sorted(word))
+        if key not in groups:
+            groups[key] = []
+        groups[key].append(word)
+    return list(groups.values())
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-020" data-suite="coding">
+  <summary><code>challenge-coding-020</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 63179 ms · Cost: $0.006709 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(text: str) -&gt; dict，解析 Markdown front matter。只有第一行正好是 --- 时才解析，直到下一行 --- 结束；每行 key: value，key 和 value 两侧 trim；形如 [a, b] 的 value 返回字符串列表；其他 value 返回字符串。没有完整 front matter 返回 {}。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+text=&#x27;---\ntitle: Test\ntags: [ai, bench,  v0]\ndraft: false\n---\nbody&#x27;
+assert solution.solve(text) == {&#x27;title&#x27;:&#x27;Test&#x27;,&#x27;tags&#x27;:[&#x27;ai&#x27;,&#x27;bench&#x27;,&#x27;v0&#x27;],&#x27;draft&#x27;:&#x27;false&#x27;}
+assert solution.solve(&#x27;hello\n---\na: b&#x27;) == {}
+assert solution.solve(&#x27;---\na: 1&#x27;) == {}</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+def solve(text: str) -&gt; dict:
+    lines = text.split(&#x27;\n&#x27;)
+    lines = [l.rstrip(&#x27;\r&#x27;) for l in lines]
+    if not lines or lines[0] != &#x27;---&#x27;:
+        return {}
+    end_idx = -1
+    for i in range(1, len(lines)):
+        if lines[i] == &#x27;---&#x27;:
+            end_idx = i
+            break
+    if end_idx == -1:
+        return {}
+    result = {}
+    for i in range(1, end_idx):
+        line = lines[i]
+        if &#x27;:&#x27; not in line:
+            continue
+        colon_idx = line.index(&#x27;:&#x27;)
+        key = line[:colon_idx].strip()
+        value = line[colon_idx + 1:].strip()
+        if value.startswith(&#x27;[&#x27;) and value.endswith(&#x27;]&#x27;):
+            inner = value[1:-1]
+            if inner.strip() == &#x27;&#x27;:
+                result[key] = []
+            else:
+                result[key] = [item.strip() for item in inner.split(&#x27;,&#x27;)]
+        else:
+            result[key] = value
+    return result
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-021" data-suite="coding">
+  <summary><code>challenge-coding-021</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 9563 ms · Cost: $0.001650 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(items: list[str], k: int) -&gt; list[str]，返回出现次数最高的前 k 个元素；次数相同按第一次出现的先后排序；k 大于不同元素数量时返回全部。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+assert solution.solve([&#x27;b&#x27;,&#x27;a&#x27;,&#x27;b&#x27;,&#x27;c&#x27;,&#x27;a&#x27;,&#x27;b&#x27;], 2) == [&#x27;b&#x27;,&#x27;a&#x27;]
+assert solution.solve([&#x27;x&#x27;,&#x27;y&#x27;,&#x27;z&#x27;,&#x27;y&#x27;,&#x27;z&#x27;,&#x27;x&#x27;], 2) == [&#x27;x&#x27;,&#x27;y&#x27;]
+assert solution.solve([&#x27;a&#x27;], 5) == [&#x27;a&#x27;]</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+def solve(items: list[str], k: int) -&gt; list[str]:
+    from collections import Counter
+    count = Counter()
+    first_seen = {}
+    for i, item in enumerate(items):
+        count[item] += 1
+        if item not in first_seen:
+            first_seen[item] = i
+    unique = list(count.keys())
+    unique.sort(key=lambda x: (-count[x], first_seen[x]))
+    return unique[:k]
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-022" data-suite="coding">
+  <summary><code>challenge-coding-022</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 12627 ms · Cost: $0.002511 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(config: dict, overrides: dict[str, object]) -&gt; dict。overrides 的 key 是点号路径；值为 None 表示删除该路径的叶子 key；其他值写入路径，必要时创建中间 dict；不能修改输入 config。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+base={&#x27;db&#x27;:{&#x27;host&#x27;:&#x27;old&#x27;,&#x27;port&#x27;:5432},&#x27;feature&#x27;:{&#x27;x&#x27;:1}}
+overrides={&#x27;db.host&#x27;:&#x27;new&#x27;,&#x27;feature.x&#x27;:None,&#x27;api.timeout&#x27;:30}
+res=solution.solve(base, overrides)
+assert res == {&#x27;db&#x27;:{&#x27;host&#x27;:&#x27;new&#x27;,&#x27;port&#x27;:5432},&#x27;feature&#x27;:{},&#x27;api&#x27;:{&#x27;timeout&#x27;:30}}
+assert base == {&#x27;db&#x27;:{&#x27;host&#x27;:&#x27;old&#x27;,&#x27;port&#x27;:5432},&#x27;feature&#x27;:{&#x27;x&#x27;:1}}
+assert solution.solve({&#x27;a&#x27;:1}, {&#x27;a.b&#x27;:2}) == {&#x27;a&#x27;: {&#x27;b&#x27;: 2}}</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+import copy
+
+def solve(config: dict, overrides: dict[str, object]) -&gt; dict:
+    result = copy.deepcopy(config)
+    for path, value in overrides.items():
+        keys = path.split(&#x27;.&#x27;)
+        current = result
+        for key in keys[:-1]:
+            if key not in current or not isinstance(current[key], dict):
+                current[key] = {}
+            current = current[key]
+        leaf = keys[-1]
+        if value is None:
+            current.pop(leaf, None)
+        else:
+            current[leaf] = value
+    return result
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-023" data-suite="coding">
+  <summary><code>challenge-coding-023</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 15690 ms · Cost: $0.003158 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(query: str) -&gt; dict[str, list[str]]，解析 URL query string。&amp; 分隔参数；没有 = 的参数值为空字符串；+ 表示空格；%XX 需要按 UTF-8 百分号解码；同名 key 保留所有值的列表。可以使用标准库。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+assert solution.solve(&#x27;a=1&amp;b=two+words&amp;a=3&#x27;) == {&#x27;a&#x27;:[&#x27;1&#x27;,&#x27;3&#x27;], &#x27;b&#x27;:[&#x27;two words&#x27;]} 
+assert solution.solve(&#x27;empty=&amp;flag&amp;x=a%2Bb&#x27;) == {&#x27;empty&#x27;:[&#x27;&#x27;], &#x27;flag&#x27;:[&#x27;&#x27;], &#x27;x&#x27;:[&#x27;a+b&#x27;]} 
+assert solution.solve(&#x27;&#x27;) == {}</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+from urllib.parse import unquote_plus
+from collections import defaultdict
+
+def solve(query: str) -&gt; dict[str, list[str]]:
+    result = defaultdict(list)
+    if not query:
+        return dict(result)
+    for part in query.split(&#x27;&amp;&#x27;):
+        if not part:
+            continue
+        if &#x27;=&#x27; in part:
+            key, value = part.split(&#x27;=&#x27;, 1)
+        else:
+            key, value = part, &#x27;&#x27;
+        key = unquote_plus(key, encoding=&#x27;utf-8&#x27;)
+        value = unquote_plus(value, encoding=&#x27;utf-8&#x27;)
+        result[key].append(value)
+    return dict(result)
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-024" data-suite="coding">
+  <summary><code>challenge-coding-024</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 21920 ms · Cost: $0.003772 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(html: str) -&gt; bool，校验简化 HTML 标签是否配对。标签形如 &lt;a&gt;、&lt;/a&gt;、&lt;br/&gt;，标签名只含小写字母；自闭合标签不入栈；普通文本忽略。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+assert solution.solve(&#x27;&lt;div&gt;&lt;br/&gt;&lt;p&gt;x&lt;/p&gt;&lt;/div&gt;&#x27;) is True
+assert solution.solve(&#x27;&lt;a&gt;&lt;b&gt;&lt;/a&gt;&lt;/b&gt;&#x27;) is False
+assert solution.solve(&#x27;text&lt;a&gt;&lt;b/&gt;&lt;/a&gt;&#x27;) is True</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+import re
+
+def solve(html: str) -&gt; bool:
+    tags = re.findall(r&#x27;&lt;[^&gt;]+&gt;&#x27;, html)
+    stack = []
+    for tag in tags:
+        if tag.endswith(&#x27;/&gt;&#x27;):
+            continue
+        if tag.startswith(&#x27;&lt;/&#x27;):
+            name = tag[2:-1]
+            if not stack or stack[-1] != name:
+                return False
+            stack.pop()
+        else:
+            name = tag[1:-1]
+            stack.append(name)
+    return len(stack) == 0
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-025" data-suite="coding">
+  <summary><code>challenge-coding-025</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 7850 ms · Cost: $0.001431 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(grid: list[str]) -&gt; int。grid 中 S 是起点，E 是终点，# 是墙，. 可走。每步上下左右移动一格，返回从 S 到 E 的最短步数；不可达返回 -1。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+assert solution.solve([&#x27;S..&#x27;,&#x27;##.&#x27;,&#x27;..E&#x27;]) == 4
+assert solution.solve([&#x27;S#&#x27;,&#x27;##&#x27;,&#x27;E.&#x27;]) == -1
+assert solution.solve([&#x27;SE&#x27;]) == 1</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+from collections import deque
+
+def solve(grid: list[str]) -&gt; int:
+    rows, cols = len(grid), len(grid[0])
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == &#x27;S&#x27;:
+                sr, sc = r, c
+            elif grid[r][c] == &#x27;E&#x27;:
+                er, ec = r, c
+    queue = deque([(sr, sc, 0)])
+    visited = {(sr, sc)}
+    while queue:
+        r, c, d = queue.popleft()
+        if (r, c) == (er, ec):
+            return d
+        for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
+            nr, nc = r + dr, c + dc
+            if 0 &lt;= nr &lt; rows and 0 &lt;= nc &lt; cols and (nr, nc) not in visited and grid[nr][nc] != &#x27;#&#x27;:
+                visited.add((nr, nc))
+                queue.append((nr, nc, d + 1))
+    return -1
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-026" data-suite="coding">
+  <summary><code>challenge-coding-026</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 13468 ms · Cost: $0.002243 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(nums: list[int], k: int) -&gt; list[float]，返回每个长度为 k 的滑动窗口中位数。k 为奇数时返回中间值；k 为偶数时返回两个中间值平均数。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+assert solution.solve([1,3,-1,-3,5,3,6,7], 3) == [1, -1, -1, 3, 5, 6]
+assert solution.solve([1,2,3,4], 2) == [1.5, 2.5, 3.5]</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+import bisect
+
+def solve(nums: list[int], k: int) -&gt; list[float]:
+    result = []
+    window = []
+    for i in range(len(nums)):
+        bisect.insort(window, nums[i])
+        if len(window) &gt; k:
+            idx = bisect.bisect_left(window, nums[i - k])
+            window.pop(idx)
+        if len(window) == k:
+            if k % 2 == 1:
+                result.append(float(window[k // 2]))
+            else:
+                result.append((window[k // 2 - 1] + window[k // 2]) / 2.0)
+    return result
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-027" data-suite="coding">
+  <summary><code>challenge-coding-027</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 10026 ms · Cost: $0.001914 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(versions: list[str]) -&gt; list[str]，按简化语义版本排序。版本为 major.minor.patch 或 major.minor.patch-label；major/minor/patch 按数字比较；同一数字版本下，带 label 的预发布版本低于正式版本；label 按字典序比较。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+assert solution.solve([&#x27;1.0.0&#x27;,&#x27;1.0.0-alpha&#x27;,&#x27;1.0.1&#x27;,&#x27;1.0.0-beta&#x27;,&#x27;0.9.9&#x27;]) == [&#x27;0.9.9&#x27;,&#x27;1.0.0-alpha&#x27;,&#x27;1.0.0-beta&#x27;,&#x27;1.0.0&#x27;,&#x27;1.0.1&#x27;]
+assert solution.solve([&#x27;1.0.10&#x27;,&#x27;1.0.2&#x27;]) == [&#x27;1.0.2&#x27;,&#x27;1.0.10&#x27;]</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+def solve(versions: list[str]) -&gt; list[str]:
+    def parse(v):
+        if &#x27;-&#x27; in v:
+            ver, label = v.split(&#x27;-&#x27;, 1)
+        else:
+            ver, label = v, None
+        parts = tuple(map(int, ver.split(&#x27;.&#x27;)))
+        if label is None:
+            return (*parts, 1, &quot;&quot;)
+        else:
+            return (*parts, 0, label)
+    return sorted(versions, key=parse)
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-coding-028" data-suite="coding">
+  <summary><code>challenge-coding-028</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>coding</code> · Latency: 16438 ms · Cost: $0.003271 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 Python 代码，不要解释。实现 solve(deps: dict[str, list[str]], changed: list[str]) -&gt; list[str]。deps 表示 package -&gt; 直接依赖。返回所有 changed 包，以及直接或间接依赖 changed 包的包，按字典序排序；只出现在依赖列表中的包也要能作为 changed 包返回。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Reference tests:
+deps={&#x27;app&#x27;:[&#x27;lib&#x27;,&#x27;ui&#x27;],&#x27;ui&#x27;:[&#x27;core&#x27;],&#x27;lib&#x27;:[&#x27;core&#x27;],&#x27;core&#x27;:[],&#x27;docs&#x27;:[]}
+assert solution.solve(deps, [&#x27;core&#x27;]) == [&#x27;app&#x27;,&#x27;core&#x27;,&#x27;lib&#x27;,&#x27;ui&#x27;]
+assert solution.solve({&#x27;a&#x27;:[&#x27;x&#x27;]}, [&#x27;x&#x27;]) == [&#x27;a&#x27;,&#x27;x&#x27;]
+assert solution.solve({&#x27;a&#x27;:[&#x27;b&#x27;], &#x27;b&#x27;:[]}, [&#x27;a&#x27;]) == [&#x27;a&#x27;]</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>```python
+from collections import deque
+
+def solve(deps: dict[str, list[str]], changed: list[str]) -&gt; list[str]:
+    reverse_deps: dict[str, list[str]] = {}
+    for pkg, dep_list in deps.items():
+        for d in dep_list:
+            reverse_deps.setdefault(d, []).append(pkg)
+
+    affected = set(changed)
+    queue = deque(changed)
+    while queue:
+        pkg = queue.popleft()
+        for dependent in reverse_deps.get(pkg, []):
+            if dependent not in affected:
+                affected.add(dependent)
+                queue.append(dependent)
+
+    return sorted(affected)
+```</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-rag-008" data-suite="rag_long_context">
+  <summary><code>challenge-rag-008</code> <span class="status-fail">FAIL</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>rag_long_context</code> · Latency: 7506 ms · Cost: $0.001133 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只根据资料回答。
+
+资料 A：早期草案说 v0.3 只新增 20 道题。
+资料 B：2026-06-16 的确认方案是 v0.3-challenge100，在现有 50 题基础上新增 50 道题。
+资料 C：新增题应先生成审题 HTML，确认后再跑模型，不要立即消耗 API。
+
+问题：下一步应该新增多少题？是否应该立刻跑模型？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 50、审题
+At least one from each group: 不跑 / 不要立刻 / 先不跑 / 不应立刻 / 不应该立刻 / 不应立即 / 不应该立即 / 不应立刻跑 / 不应该立刻跑 / 不应立即跑 / 不应该立即跑
+Length guidance (diagnostic only): min=n/a, max=160</pre>
+    
+    <div class="failure-label">Mistake Analysis</div>
+    <div class="analysis">
+      <div><strong>Failure type:</strong> <code>missing_required_info</code></div>
+      <div>模型回答没有覆盖评分规则要求的完整证据链。每组至少一个依据表达：不跑 / 不要立刻 / 先不跑 / 不应立刻 / 不应该立刻 / 不应立即 / 不应该立即 / 不应立刻跑 / 不应该立刻跑 / 不应立即跑 / 不应该立即跑。这通常表示答案方向可能对，但没有把资料依据说清楚。</div>
+    </div>
+    <div class="failure-label">Output</div>
+    <pre>根据资料 B（确认方案），下一步应新增 **50 道题**。
+
+根据资料 C，**不应该**立刻跑模型，应先生成审题 HTML，确认后再跑模型。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-rag-009" data-suite="rag_long_context">
+  <summary><code>challenge-rag-009</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>rag_long_context</code> · Latency: 4387 ms · Cost: $0.000581 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只根据资料回答，不要自行补充。
+
+资料：报告展示 pass_rate、avg_latency_ms、total_cost、reasoning_tokens、失败样例和逐题明细。资料没有包含用户满意度调查，也没有包含模型训练数据来源。
+
+问题：能否根据这份报告判断用户满意度？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 不能、用户满意度
+At least one from each group: 没有包含 / 没有提供 / 资料没有 / 未包含
+Forbidden phrases: 可以判断
+Length guidance (diagnostic only): min=n/a, max=120</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>不能。资料没有包含用户满意度调查。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-rag-010" data-suite="rag_long_context">
+  <summary><code>challenge-rag-010</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>rag_long_context</code> · Latency: 7248 ms · Cost: $0.001460 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只根据资料回答。
+
+资料：模型 A 通过 48/50，平均延迟 20 秒，成本 0.20 美元，没有超时失败。模型 B 通过 44/50，平均延迟 4 秒，成本 0.05 美元，没有超时失败。模型 C 通过 46/50，平均延迟 9 秒，成本 0.04 美元，但有 3 次 API 超时。
+
+问题：如果要选低延迟且稳定的生产摘要模型，资料更支持选择哪个？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: B、延迟
+At least one from each group: 没有超时 / 无超时
+Forbidden phrases: 选择 A、选择 C
+Length guidance (diagnostic only): min=n/a, max=160</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>**模型 B**。
+
+理由：
+- **低延迟**：模型 B 平均延迟仅 4 秒，三者中最低。
+- **稳定**：模型 B 没有超时失败，而模型 C 有 3 次 API 超时，稳定性不足。
+
+模型 A 虽然也稳定，但延迟高达 20 秒，不符合&quot;低延迟&quot;要求。因此资料更支持选择模型 B。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-rag-011" data-suite="rag_long_context">
+  <summary><code>challenge-rag-011</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>rag_long_context</code> · Latency: 5467 ms · Cost: $0.000914 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只根据资料回答。
+
+资料：DracoBench 当前 scoring policy 中，text_rules 的 max_chars/min_chars 只作为诊断信息记录，length_scored 为 false。缺少 required、required_any 或出现 forbidden 才会导致失败。
+
+问题：如果答案超过 max_chars，但 required 都满足且没有 forbidden，会因为长度直接扣分吗？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 诊断
+At least one from each group: 不扣分 / 不会 / 不会因长度 / 不会因此被扣分 / 不会直接导致扣分 / 不会导致扣分 / 不会导致失败或扣分；length_scored / 长度
+Forbidden phrases: 直接失败、必须重跑
+Length guidance (diagnostic only): min=n/a, max=140</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>不会。根据资料，`max_chars` 只作为诊断信息记录（`length_scored` 为 false），不会因为长度直接扣分。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-rag-012" data-suite="rag_long_context">
+  <summary><code>challenge-rag-012</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>rag_long_context</code> · Latency: 4998 ms · Cost: $0.000945 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只根据资料回答。
+
+资料 A：某模型原始结果为 45/50。
+资料 B：修正一个同义表达评分规则后，rescored 结果为 46/50。
+资料 C：总览 index 使用 rescored JSONL 作为展示结果。
+
+问题：写文章引用总览结果时，应写 45/50 还是 46/50？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 46/50
+Forbidden phrases: 45/50 更合适、原始结果为准
+Length guidance (diagnostic only): min=n/a, max=140</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>46/50。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-rag-013" data-suite="rag_long_context">
+  <summary><code>challenge-rag-013</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>rag_long_context</code> · Latency: 5761 ms · Cost: $0.001096 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只根据资料回答。
+
+资料：为了复现一次 benchmark，记录中包含 model、case_id、prompt_hash、parameters、scorer details、output、latency_ms 和 usage。记录不包含 chain of thought，也不包含训练数据。
+
+问题：复现评测主要应该依赖哪些记录字段？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: model、prompt_hash、parameters、scorer
+Forbidden phrases: chain of thought、训练数据
+Length guidance (diagnostic only): min=n/a, max=200</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>复现评测主要依赖以下记录字段：model、case_id、prompt_hash、parameters、scorer details、output、latency_ms 和 usage。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-rag-014" data-suite="rag_long_context">
+  <summary><code>challenge-rag-014</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>rag_long_context</code> · Latency: 4598 ms · Cost: $0.000875 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只根据资料回答。
+
+资料 A：早期 ability mode 使用 4096 max_tokens。
+资料 B：后来为了公平，ability mode 统一放宽到 16384 max_tokens。
+资料 C：当前总览页只展示 v0.2-challenge50 且 ability16384 的结果。
+
+问题：当前总览页对应的 token limit 是多少？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 16384
+Forbidden phrases: 4096
+Length guidance (diagnostic only): min=n/a, max=100</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>16384</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-rag-015" data-suite="rag_long_context">
+  <summary><code>challenge-rag-015</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>rag_long_context</code> · Latency: 9855 ms · Cost: $0.001950 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只根据资料回答。
+
+资料：coding-004 的失败是代码运行时 ValueError，根因是把字符串 key 强转 int。rag-006 的失败曾经是规则没有把 int 类型视作“整数”的同义表达，后来通过人工复查修正规则。
+
+问题：哪类失败更需要人工复查评分规则？回答时也说明 coding-004 是否属于这种情况。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 人工复查、coding-004
+At least one from each group: rag-006 / 规则 / 评分规则 / 同义表达；不属于 / 不是 / 不需要
+Length guidance (diagnostic only): min=n/a, max=180</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>评分规则不完善（如未涵盖同义表达，如 rag-006 的情况）导致的失败更需要人工复查评分规则。
+
+coding-004 不属于这种情况。它的失败是代码运行时的错误（ValueError），根因是代码逻辑问题（把字符串 key 强转 int），与评分规则无关。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-rag-016" data-suite="rag_long_context">
+  <summary><code>challenge-rag-016</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>rag_long_context</code> · Latency: 7421 ms · Cost: $0.001040 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只根据资料回答。
+
+资料：usage 字段包含 prompt_tokens、completion_tokens、reasoning_tokens 和 cost。报告没有供应商真实利润率，也没有供应商内部成本。
+
+问题：能否从 usage 字段判断供应商利润率？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 不能、利润率
+At least one from each group: 不包含 / 没有
+Forbidden phrases: 可以判断
+Length guidance (diagnostic only): min=n/a, max=120</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>不能。根据资料，没有供应商真实利润率和内部成本，因此无法判断。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-rag-017" data-suite="rag_long_context">
+  <summary><code>challenge-rag-017</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>rag_long_context</code> · Latency: 10315 ms · Cost: $0.001398 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只根据资料回答。
+
+资料：当前 index 页只显示最后这版 50 道题的 v0.2-challenge50 结果，并且 token limit 都统一为 ability16384。之前的版本和 ability4096 结果不显示在 index 页。
+
+问题：index 页是否应该展示旧版本结果？当前展示范围是什么？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: v0.2-challenge50、ability16384
+At least one from each group: 不应该 / 不展示 / 未展示 / 不显示 / 均不显示 / 不应展示；旧版本 / 之前的版本
+Length guidance (diagnostic only): min=n/a, max=160</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>1. **不展示**。资料明确指出“之前的版本和 ability4096 结果不显示在 index 页”。
+2. **当前展示范围**：最后这版 50 道题的 v0.2-challenge50 结果，且 token limit 统一为 ability16384。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-rag-018" data-suite="rag_long_context">
+  <summary><code>challenge-rag-018</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>rag_long_context</code> · Latency: 5752 ms · Cost: $0.000971 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只根据资料回答。
+
+资料：某 coding 题中，模型响应的 finish_reason 为 length，output 为空，测试报错为 module has no attribute solve。报告认为这不是算法逻辑错误，而是输出被截断后没有形成可执行函数。
+
+问题：这次失败应如何归因？</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 输出
+At least one from each group: 截断 / length / token
+Length guidance (diagnostic only): min=n/a, max=140</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>根据资料，这次失败应归因为：**输出被截断后没有形成可执行函数**（而非算法逻辑错误）。</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-debugging-015" data-suite="debugging">
+  <summary><code>challenge-debugging-015</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>debugging</code> · Latency: 6865 ms · Cost: $0.001267 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>下面代码期望 funcs[0]()、funcs[1]()、funcs[2]() 分别返回 0、1、2，但实际都会返回 2。请指出根因，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 append 行&gt;。
+
+```python
+funcs = []
+for i in range(3):
+    funcs.append(lambda: i)
+```</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+FIX:\s*`?\s*funcs\.append\(lambda\s+i=i\s*:\s*i\)\s*`?</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>## 根因
+
+**闭包的延迟绑定（late binding）**：`lambda` 捕获的是变量 `i` 的**引用**而非值。循环结束后 `i` 的值为 `2`，三个 lambda 调用时都读取同一个 `i`，因此全部返回 `2`。
+
+## 最小修复
+
+利用默认参数在**定义时**立即绑定当前值：
+
+```python
+funcs = []
+for i in range(3):
+    funcs.append(lambda i=i: i)
+```
+
+FIX: funcs.append(lambda i=i: i)</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-debugging-016" data-suite="debugging">
+  <summary><code>challenge-debugging-016</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>debugging</code> · Latency: 5476 ms · Cost: $0.000926 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>下面 context manager 期望异常继续向外抛出，但实际异常被吞掉。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 return 行&gt;。
+
+```python
+class Span:
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc, tb):
+        return True
+```</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+FIX:\s*`?\s*return(?:\s+False|\s+None)?\s*`?</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>## Bug
+
+`__exit__` 返回 `True` 会告诉 Python 解释器**吞掉（suppress）异常**。要让异常继续向外抛出，必须返回 falsy 值。
+
+## 最小修复
+
+将 `return True` 改为 `return False`。
+
+FIX: return False</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-debugging-017" data-suite="debugging">
+  <summary><code>challenge-debugging-017</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>debugging</code> · Latency: 8338 ms · Cost: $0.000994 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>下面代码期望每个 Bag 实例都有独立列表，但不同实例会共享 items。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;新增到 __init__ 中的赋值行&gt;。
+
+```python
+class Bag:
+    items = []
+    def add(self, x):
+        self.items.append(x)
+```</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+FIX:\s*`?\s*self\.items\s*=\s*\[\]\s*`?</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>## Bug
+
+`items = []` 是**类属性**，所有 `Bag` 实例共享同一个列表对象。对任一实例调用 `add` 都会修改这个共享列表。
+
+## 最小修复
+
+在 `__init__` 中将 `items` 绑定为实例属性，遮蔽类属性：
+
+```python
+class Bag:
+    items = []
+    def __init__(self):
+        self.items = []
+    def add(self, x):
+        self.items.append(x)
+```
+
+FIX: self.items = []</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-debugging-018" data-suite="debugging">
+  <summary><code>challenge-debugging-018</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>debugging</code> · Latency: 5451 ms · Cost: $0.001060 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>下面代码期望每次不传 ts 时使用当前时间，但默认时间只会在函数定义时计算一次。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的函数定义行&gt;。
+
+```python
+from datetime import datetime
+
+def mark(ts=datetime.utcnow()):
+    return ts.isoformat()
+```</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+FIX:\s*`?\s*def\s+mark\(ts=None\)\s*:</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>**Bug:** Python 的默认参数值在函数定义时只求值一次。`datetime.utcnow()` 在 `def` 执行时计算并固定，之后每次不传 `ts` 都会返回同一个旧时间戳。
+
+**最小修复：** 将默认值改为 `None`，在函数体内判断并赋值。
+
+```python
+from datetime import datetime
+
+def mark(ts=None):
+    if ts is None:
+        ts = datetime.utcnow()
+    return ts.isoformat()
+```
+
+FIX: def mark(ts=None):</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-debugging-019" data-suite="debugging">
+  <summary><code>challenge-debugging-019</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>debugging</code> · Latency: 4644 ms · Cost: $0.000745 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>下面代码期望返回小写字符串，但实际返回的是方法对象。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 return 行&gt;。
+
+```python
+def normalize(s):
+    return s.strip().lower
+```</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected regex pattern:
+FIX:\s*`?\s*return\s+s\.strip\(\)\.lower\(\)\s*`?</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>**Bug:** `lower` 是一个方法，缺少调用括号 `()`，因此返回的是方法对象而非调用结果。
+
+**最小修复:** 在 `lower` 后加上 `()`。
+
+FIX: return s.strip().lower()</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-if-006" data-suite="instruction_following">
+  <summary><code>challenge-if-006</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>instruction_following</code> · Latency: 31450 ms · Cost: $0.002994 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>只输出 JSON 对象，不要 Markdown。字段 version 必须是 &quot;v0.3&quot;；字段 ready 必须是 true；字段 cases 必须是正好两个对象组成的数组。cases 中每个对象只能包含 id、weight、active 三个字段；id 是字符串且匹配 case-1 或 case-2；weight 是整数；active 是布尔值。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Expected JSON schema:
+{
+  &quot;type&quot;: &quot;object&quot;,
+  &quot;required&quot;: [
+    &quot;version&quot;,
+    &quot;ready&quot;,
+    &quot;cases&quot;
+  ],
+  &quot;additionalProperties&quot;: false,
+  &quot;properties&quot;: {
+    &quot;version&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;const&quot;: &quot;v0.3&quot;
+    },
+    &quot;ready&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;const&quot;: true
+    },
+    &quot;cases&quot;: {
+      &quot;type&quot;: &quot;array&quot;,
+      &quot;minItems&quot;: 2,
+      &quot;maxItems&quot;: 2,
+      &quot;items&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;required&quot;: [
+          &quot;id&quot;,
+          &quot;weight&quot;,
+          &quot;active&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;properties&quot;: {
+          &quot;id&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^case-[12]$&quot;
+          },
+          &quot;weight&quot;: {
+            &quot;type&quot;: &quot;integer&quot;
+          },
+          &quot;active&quot;: {
+            &quot;type&quot;: &quot;boolean&quot;
+          }
+        }
+      }
+    }
+  }
+}</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>{
+  &quot;version&quot;: &quot;v0.3&quot;,
+  &quot;ready&quot;: true,
+  &quot;cases&quot;: [
+    {
+      &quot;id&quot;: &quot;case-1&quot;,
+      &quot;weight&quot;: 1,
+      &quot;active&quot;: true
+    },
+    {
+      &quot;id&quot;: &quot;case-2&quot;,
+      &quot;weight&quot;: 2,
+      &quot;active&quot;: false
+    }
+  ]
+}</pre>
+  </div>
+</details>
+<details class="qa-card" id="qa-challenge-zh-writing-004" data-suite="chinese_writing">
+  <summary><code>challenge-zh-writing-004</code> <span class="status-pass">PASS</span></summary>
+  <div class="qa-body">
+    <div class="qa-meta">Suite: <code>chinese_writing</code> · Latency: 30009 ms · Cost: $0.006103 · Finish: <code>stop</code></div>
+    <div class="failure-label">Prompt</div>
+    <pre>写一段不超过 160 个汉字的公众号小结，主题是“为什么 v0.3 要扩到 100 题”。必须包含“推理题”“边界条件”“人工复查”，不能出现“排行榜”。</pre>
+    
+    <div class="failure-label">Standard Answer / Scoring Expectation</div>
+    <pre>Required phrases: 推理题、边界条件、人工复查
+Forbidden phrases: 排行榜
+Length guidance (diagnostic only): min=n/a, max=160</pre>
+    
+    <div class="failure-label">Output</div>
+    <pre>v0.3为何扩充至100题？为更全面评估大模型，我们大幅增加了复杂的推理题，并针对各类边界条件设计专项测试。扩充后，每道题均经过严格的人工复查，确保题目质量与解析准确。百题规模能更精准地反映模型在复杂场景下的真实表现，为您提供更具参考价值的评测结果。</pre>
+  </div>
+</details></div>
+    </section>
+    <section id="case-details">
+      <h2>Case Details</h2>
+      <div class="controls">
+        <input id="search" type="search" placeholder="Search case id, suite, output">
+      </div>
+      <table id="case-table">
+        <thead><tr><th>Case</th><th>Suite</th><th>Status</th><th>Failure Type</th><th>Score</th><th>Latency</th><th>Cost</th><th>Finish</th></tr></thead>
+        <tbody><tr data-suite="coding"><td><code>challenge-coding-001</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>20865 ms</td><td>$0.004163</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-002</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>14779 ms</td><td>$0.002897</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-003</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>26675 ms</td><td>$0.005345</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-004</code></td><td>coding</td><td class="status-fail">FAIL</td><td><code>runtime_type_assumption</code></td><td>0.0</td><td>24354 ms</td><td>$0.002861</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-005</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>21107 ms</td><td>$0.002835</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-006</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>13936 ms</td><td>$0.002469</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-007</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>23067 ms</td><td>$0.004599</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-008</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>8985 ms</td><td>$0.001740</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-001</code></td><td>debugging</td><td class="status-fail">FAIL</td><td><code>regex_miss</code></td><td>0.0</td><td>14416 ms</td><td>$0.002407</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-002</code></td><td>debugging</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>7283 ms</td><td>$0.001236</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-003</code></td><td>debugging</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>15248 ms</td><td>$0.003064</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-004</code></td><td>debugging</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>6231 ms</td><td>$0.000950</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-005</code></td><td>debugging</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>7503 ms</td><td>$0.001485</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-006</code></td><td>debugging</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>6280 ms</td><td>$0.001169</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-007</code></td><td>debugging</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>7489 ms</td><td>$0.001354</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-008</code></td><td>debugging</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>8743 ms</td><td>$0.001564</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-001</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>4570 ms</td><td>$0.000645</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-002</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>18477 ms</td><td>$0.003710</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-003</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>3712 ms</td><td>$0.000629</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-004</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>4651 ms</td><td>$0.000846</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-005</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>6718 ms</td><td>$0.001269</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-001</code></td><td>rag_long_context</td><td class="status-fail">FAIL</td><td><code>missing_required_info</code></td><td>0.0</td><td>11206 ms</td><td>$0.001171</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-002</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>8576 ms</td><td>$0.001660</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-003</code></td><td>rag_long_context</td><td class="status-fail">FAIL</td><td><code>missing_required_info</code></td><td>0.0</td><td>10279 ms</td><td>$0.001949</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-004</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>4693 ms</td><td>$0.000589</td><td>stop</td></tr>
+<tr data-suite="instruction_following"><td><code>challenge-if-001</code></td><td>instruction_following</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>2563 ms</td><td>$0.000425</td><td>stop</td></tr>
+<tr data-suite="instruction_following"><td><code>challenge-if-002</code></td><td>instruction_following</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>22978 ms</td><td>$0.002341</td><td>stop</td></tr>
+<tr data-suite="instruction_following"><td><code>challenge-if-003</code></td><td>instruction_following</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>9226 ms</td><td>$0.001770</td><td>stop</td></tr>
+<tr data-suite="chinese_writing"><td><code>challenge-zh-writing-001</code></td><td>chinese_writing</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>14235 ms</td><td>$0.002814</td><td>stop</td></tr>
+<tr data-suite="chinese_writing"><td><code>challenge-zh-writing-002</code></td><td>chinese_writing</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>6924 ms</td><td>$0.001233</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-009</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>10709 ms</td><td>$0.001998</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-010</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>18807 ms</td><td>$0.003744</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-011</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>13253 ms</td><td>$0.002492</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-012</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>9601 ms</td><td>$0.001808</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-013</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>12260 ms</td><td>$0.002427</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-014</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>48248 ms</td><td>$0.009050</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-009</code></td><td>debugging</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>9864 ms</td><td>$0.001847</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-010</code></td><td>debugging</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>19762 ms</td><td>$0.003846</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-011</code></td><td>debugging</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>10055 ms</td><td>$0.001370</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-012</code></td><td>debugging</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>5472 ms</td><td>$0.001004</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-013</code></td><td>debugging</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>7192 ms</td><td>$0.001170</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-014</code></td><td>debugging</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>9028 ms</td><td>$0.001740</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-006</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>6388 ms</td><td>$0.000930</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-007</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>4566 ms</td><td>$0.000656</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-005</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>5550 ms</td><td>$0.001058</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-006</code></td><td>rag_long_context</td><td class="status-fail">FAIL</td><td><code>missing_required_info</code></td><td>0.0</td><td>3181 ms</td><td>$0.000529</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-007</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>9792 ms</td><td>$0.001939</td><td>stop</td></tr>
+<tr data-suite="instruction_following"><td><code>challenge-if-004</code></td><td>instruction_following</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>11858 ms</td><td>$0.002340</td><td>stop</td></tr>
+<tr data-suite="instruction_following"><td><code>challenge-if-005</code></td><td>instruction_following</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>7881 ms</td><td>$0.001479</td><td>stop</td></tr>
+<tr data-suite="chinese_writing"><td><code>challenge-zh-writing-003</code></td><td>chinese_writing</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>25693 ms</td><td>$0.005050</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-008</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>9548 ms</td><td>$0.000905</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-009</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>24688 ms</td><td>$0.004980</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-010</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>6962 ms</td><td>$0.001116</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-011</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>5379 ms</td><td>$0.000951</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-012</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>5491 ms</td><td>$0.000997</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-013</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>3183 ms</td><td>$0.000526</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-014</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>3764 ms</td><td>$0.000421</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-015</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>4841 ms</td><td>$0.000776</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-016</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>6313 ms</td><td>$0.000850</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-017</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>5851 ms</td><td>$0.001155</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-018</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>4127 ms</td><td>$0.000711</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-019</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>9326 ms</td><td>$0.001774</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-020</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>4952 ms</td><td>$0.000839</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-021</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>6360 ms</td><td>$0.001220</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-022</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>5444 ms</td><td>$0.000884</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-023</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>8798 ms</td><td>$0.001439</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-024</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>3847 ms</td><td>$0.000687</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-025</code></td><td>reasoning</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>4685 ms</td><td>$0.000784</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-015</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>48838 ms</td><td>$0.007980</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-016</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>12679 ms</td><td>$0.002255</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-017</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>18534 ms</td><td>$0.003687</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-018</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>9884 ms</td><td>$0.001932</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-019</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>10614 ms</td><td>$0.002119</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-020</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>63179 ms</td><td>$0.006709</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-021</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>9563 ms</td><td>$0.001650</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-022</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>12627 ms</td><td>$0.002511</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-023</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>15690 ms</td><td>$0.003158</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-024</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>21920 ms</td><td>$0.003772</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-025</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>7850 ms</td><td>$0.001431</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-026</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>13468 ms</td><td>$0.002243</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-027</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>10026 ms</td><td>$0.001914</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-028</code></td><td>coding</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>16438 ms</td><td>$0.003271</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-008</code></td><td>rag_long_context</td><td class="status-fail">FAIL</td><td><code>missing_required_info</code></td><td>0.0</td><td>7506 ms</td><td>$0.001133</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-009</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>4387 ms</td><td>$0.000581</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-010</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>7248 ms</td><td>$0.001460</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-011</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>5467 ms</td><td>$0.000914</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-012</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>4998 ms</td><td>$0.000945</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-013</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>5761 ms</td><td>$0.001096</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-014</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>4598 ms</td><td>$0.000875</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-015</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>9855 ms</td><td>$0.001950</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-016</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>7421 ms</td><td>$0.001040</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-017</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>10315 ms</td><td>$0.001398</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-018</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>5752 ms</td><td>$0.000971</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-015</code></td><td>debugging</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>6865 ms</td><td>$0.001267</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-016</code></td><td>debugging</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>5476 ms</td><td>$0.000926</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-017</code></td><td>debugging</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>8338 ms</td><td>$0.000994</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-018</code></td><td>debugging</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>5451 ms</td><td>$0.001060</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-019</code></td><td>debugging</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>4644 ms</td><td>$0.000745</td><td>stop</td></tr>
+<tr data-suite="instruction_following"><td><code>challenge-if-006</code></td><td>instruction_following</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>31450 ms</td><td>$0.002994</td><td>stop</td></tr>
+<tr data-suite="chinese_writing"><td><code>challenge-zh-writing-004</code></td><td>chinese_writing</td><td class="status-pass">PASS</td><td><code>-</code></td><td>1.0</td><td>30009 ms</td><td>$0.006103</td><td>stop</td></tr></tbody>
+      </table>
+    </section>
+  </main>
+  <script>
+    const search = document.querySelector('#search');
+    const rows = [...document.querySelectorAll('#case-table tbody tr')];
+    search.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      for (const row of rows) {
+        row.style.display = !query || row.textContent.toLowerCase().includes(query) ? '' : 'none';
+      }
+    });
+    const qaSearch = document.querySelector('#qa-search');
+    const qaCards = [...document.querySelectorAll('#qa-list details')];
+    qaSearch.addEventListener('input', () => {
+      const query = qaSearch.value.trim().toLowerCase();
+      for (const card of qaCards) {
+        const matched = !query || card.textContent.toLowerCase().includes(query);
+        card.style.display = matched ? '' : 'none';
+        if (query && matched) {
+          card.open = true;
+        }
+      }
+    });
+  </script>
+</body>
+</html>
