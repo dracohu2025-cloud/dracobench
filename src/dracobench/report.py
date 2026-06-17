@@ -818,14 +818,15 @@ def summarize_run_file(run_path: Path | str, index_path: Path | str | None = Non
         suite_summary.append({"suite": suite, "passed": suite_passed, "total": suite_total})
 
     detail_path = _detail_html_path(path)
+    base_dir = Path(index_path).parent if index_path else Path.cwd()
     detail_href = ""
     if detail_path.exists():
-        detail_href = _relative_href(detail_path, Path(index_path).parent if index_path else Path.cwd())
+        detail_href = _report_site_href(detail_path, base_dir)
 
     return {
         "run_name": path.stem,
         "run_path": str(path),
-        "run_href": _relative_href(path, Path(index_path).parent if index_path else Path.cwd()),
+        "run_href": _run_site_href(path, base_dir),
         "detail_path": str(detail_path) if detail_path.exists() else "",
         "detail_href": detail_href,
         "model": ", ".join(model_names),
@@ -915,6 +916,18 @@ def _detail_html_path(run_path: Path) -> Path:
     if run_path.parent.name == "runs":
         return run_path.parent.parent / "reports" / f"{run_path.stem}.html"
     return run_path.with_suffix(".html")
+
+
+def _report_site_href(path: Path, base_dir: Path) -> str:
+    if path.parent.name == "reports":
+        return f"/reports/{path.name}"
+    return _relative_href(path, base_dir)
+
+
+def _run_site_href(path: Path, base_dir: Path) -> str:
+    if path.parent.name == "runs":
+        return f"/runs/{path.name}"
+    return _relative_href(path, base_dir)
 
 
 def _relative_href(path: Path, base_dir: Path) -> str:

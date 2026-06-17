@@ -1,9 +1,16 @@
+import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
 from dracobench.cli import default_html_report_path
-from dracobench.report import build_html_report, build_index_report, explain_failure, select_preferred_run_paths
+from dracobench.report import (
+    build_html_report,
+    build_index_report,
+    explain_failure,
+    select_preferred_run_paths,
+    summarize_run_file,
+)
 
 
 class ReportHtmlTests(TestCase):
@@ -450,6 +457,34 @@ class ReportHtmlTests(TestCase):
         self.assertIn("4719", html)
         self.assertIn("22761", html)
         self.assertIn("19746", html)
+
+    def test_summarize_run_file_uses_site_absolute_links_for_vercel(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            runs_dir = root / "runs"
+            reports_dir = root / "reports"
+            runs_dir.mkdir()
+            reports_dir.mkdir()
+
+            run_path = runs_dir / "v0.3-challenge100-z-ai-glm-5-2-ability16384.jsonl"
+            report_path = reports_dir / "v0.3-challenge100-z-ai-glm-5-2-ability16384.html"
+            record = {
+                "case_id": "challenge-coding-001",
+                "suite": "coding",
+                "model": "z-ai/glm-5.2",
+                "parameters": {"max_tokens": 16384, "temperature": 0},
+                "latency_ms": 1000,
+                "usage": {},
+                "finish_reason": "stop",
+                "score": {"passed": True},
+            }
+            run_path.write_text(json.dumps(record) + "\n", encoding="utf-8")
+            report_path.write_text("<!doctype html>", encoding="utf-8")
+
+            summary = summarize_run_file(run_path, index_path=reports_dir / "index.html")
+
+        self.assertEqual(summary["run_href"], "/runs/v0.3-challenge100-z-ai-glm-5-2-ability16384.jsonl")
+        self.assertEqual(summary["detail_href"], "/reports/v0.3-challenge100-z-ai-glm-5-2-ability16384.html")
 
     def test_select_preferred_run_paths_prefers_rescored_files(self) -> None:
         with TemporaryDirectory() as temp_dir:

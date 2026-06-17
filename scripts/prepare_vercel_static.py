@@ -40,6 +40,7 @@ def _copy_selected_results() -> None:
         report_path = REPORTS_DIR / f"{run_path.stem}.html"
         if report_path.exists():
             _copy_file(report_path, PUBLIC_DIR / "reports" / report_path.name)
+            _copy_file(report_path, PUBLIC_DIR / report_path.name)
 
 
 def _write_root_redirect() -> None:
