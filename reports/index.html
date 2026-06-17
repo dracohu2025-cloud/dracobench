@@ -229,6 +229,76 @@
       font-size: 13px;
     }
 
+    .ranking-chart {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 250, 241, 0.96);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .chart-row {
+      display: grid;
+      grid-template-columns: 44px minmax(210px, 320px) minmax(240px, 1fr) 74px;
+      gap: 12px;
+      align-items: center;
+      min-height: 50px;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .chart-row:last-child {
+      border-bottom: 0;
+    }
+
+    .chart-row.top-rank {
+      background: #fff3c4;
+    }
+
+    .rank-pill {
+      width: 30px;
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #cfc5b5;
+      border-radius: 50%;
+      color: var(--muted);
+      background: #fffdf8;
+      font-weight: 700;
+    }
+
+    .chart-model {
+      overflow-wrap: anywhere;
+    }
+
+    .chart-track {
+      position: relative;
+      min-height: 28px;
+      border-left: 1px solid rgba(112, 104, 93, 0.16);
+      background:
+        linear-gradient(90deg, rgba(112, 104, 93, 0.13) 1px, transparent 1px),
+        #f2eadc;
+      background-size: 20% 100%;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .chart-bar {
+      display: block;
+      height: 28px;
+      min-width: 2px;
+      border-radius: 7px;
+      background: linear-gradient(90deg, #24418f, #0b765f);
+    }
+
+    .chart-score {
+      font-family: "SF Mono", "Cascadia Code", "Menlo", monospace;
+      color: #5f574d;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
     @media (max-width: 980px) {
       .summary {
         grid-template-columns: repeat(2, minmax(150px, 1fr));
@@ -238,11 +308,25 @@
         display: block;
         overflow-x: auto;
       }
+
+      .chart-row {
+        grid-template-columns: 40px minmax(180px, 1fr) 70px;
+      }
+
+      .chart-track {
+        grid-column: 2 / 4;
+      }
     }
 
     @media (max-width: 560px) {
       .summary {
         grid-template-columns: 1fr;
+      }
+
+      .chart-row {
+        grid-template-columns: 36px minmax(0, 1fr) 64px;
+        gap: 8px;
+        padding: 8px 10px;
       }
     }
   </style>
@@ -250,7 +334,7 @@
 <body>
   <header>
     <h1>DracoBench v0.3-challenge100 ability16384 Results</h1>
-    <div class="subhead">汇总已生成的 DracoBench 运行结果，点击模型名称进入逐题详情。生成日期：2026-06-17 12:55</div>
+    <div class="subhead">汇总已生成的 DracoBench 运行结果，点击模型名称进入逐题详情。生成日期：2026-06-17 13:09</div>
   </header>
   <main>
     <div class="summary">
@@ -259,6 +343,81 @@
       <div class="metric"><div class="label">Avg pass rate</div><div class="value">92.1%</div></div>
       <div class="metric"><div class="label">Total cost</div><div class="value">$2.024912</div></div>
     </div>
+    <section>
+      <h2>Score Ranking</h2>
+      <div class="ranking-chart"><div class="chart-row top-rank">
+  <div><span class="rank-pill">1</span></div>
+  <div class="chart-model"><a href="/reports/v0.3-challenge100-z-ai-glm-5-2-ability16384.html">z-ai/glm-5.2</a></div>
+  <div class="chart-track" aria-label="z-ai/glm-5.2 score 98/100"><span class="chart-bar" style="width: 98.0%"></span></div>
+  <div class="chart-score">98/100</div>
+</div>
+<div class="chart-row">
+  <div><span class="rank-pill">2</span></div>
+  <div class="chart-model"><a href="/reports/v0.3-challenge100-moonshotai-kimi-k2-7-code-ability16384-rescored.html">moonshotai/kimi-k2.7-code</a></div>
+  <div class="chart-track" aria-label="moonshotai/kimi-k2.7-code score 98/100"><span class="chart-bar" style="width: 98.0%"></span></div>
+  <div class="chart-score">98/100</div>
+</div>
+<div class="chart-row">
+  <div><span class="rank-pill">3</span></div>
+  <div class="chart-model"><a href="/reports/v0.3-challenge100-moonshotai-kimi-k2-6-ability16384.html">moonshotai/kimi-k2.6</a></div>
+  <div class="chart-track" aria-label="moonshotai/kimi-k2.6 score 96/100"><span class="chart-bar" style="width: 96.0%"></span></div>
+  <div class="chart-score">96/100</div>
+</div>
+<div class="chart-row">
+  <div><span class="rank-pill">4</span></div>
+  <div class="chart-model"><a href="/reports/v0.3-challenge100-z-ai-glm-5-1-ability16384-rescored.html">z-ai/glm-5.1</a></div>
+  <div class="chart-track" aria-label="z-ai/glm-5.1 score 95/100"><span class="chart-bar" style="width: 95.0%"></span></div>
+  <div class="chart-score">95/100</div>
+</div>
+<div class="chart-row">
+  <div><span class="rank-pill">5</span></div>
+  <div class="chart-model"><a href="/reports/v0.3-challenge100-qwen-qwen3-7-max-ability16384.html">qwen/qwen3.7-max</a></div>
+  <div class="chart-track" aria-label="qwen/qwen3.7-max score 94/100"><span class="chart-bar" style="width: 94.0%"></span></div>
+  <div class="chart-score">94/100</div>
+</div>
+<div class="chart-row">
+  <div><span class="rank-pill">6</span></div>
+  <div class="chart-model"><a href="/reports/v0.3-challenge100-qwen-qwen3-7-plus-ability16384-rescored.html">qwen/qwen3.7-plus</a></div>
+  <div class="chart-track" aria-label="qwen/qwen3.7-plus score 93/100"><span class="chart-bar" style="width: 93.0%"></span></div>
+  <div class="chart-score">93/100</div>
+</div>
+<div class="chart-row">
+  <div><span class="rank-pill">7</span></div>
+  <div class="chart-model"><a href="/reports/v0.3-challenge100-xiaomi-mimo-v2-5-pro-ability16384.html">xiaomi/mimo-v2.5-pro</a></div>
+  <div class="chart-track" aria-label="xiaomi/mimo-v2.5-pro score 92/100"><span class="chart-bar" style="width: 92.0%"></span></div>
+  <div class="chart-score">92/100</div>
+</div>
+<div class="chart-row">
+  <div><span class="rank-pill">8</span></div>
+  <div class="chart-model"><a href="/reports/v0.3-challenge100-deepseek-deepseek-v4-pro-ability16384-rescored.html">deepseek/deepseek-v4-pro</a></div>
+  <div class="chart-track" aria-label="deepseek/deepseek-v4-pro score 91/100"><span class="chart-bar" style="width: 91.0%"></span></div>
+  <div class="chart-score">91/100</div>
+</div>
+<div class="chart-row">
+  <div><span class="rank-pill">9</span></div>
+  <div class="chart-model"><a href="/reports/v0.3-challenge100-minimax-minimax-m3-ability16384-rescored.html">minimax/minimax-m3</a></div>
+  <div class="chart-track" aria-label="minimax/minimax-m3 score 88/100"><span class="chart-bar" style="width: 88.0%"></span></div>
+  <div class="chart-score">88/100</div>
+</div>
+<div class="chart-row">
+  <div><span class="rank-pill">10</span></div>
+  <div class="chart-model"><a href="/reports/v0.3-challenge100-stepfun-step-3-7-flash-ability16384-rescored.html">stepfun/step-3.7-flash</a></div>
+  <div class="chart-track" aria-label="stepfun/step-3.7-flash score 88/100"><span class="chart-bar" style="width: 88.0%"></span></div>
+  <div class="chart-score">88/100</div>
+</div>
+<div class="chart-row">
+  <div><span class="rank-pill">11</span></div>
+  <div class="chart-model"><a href="/reports/v0.3-challenge100-deepseek-deepseek-v4-flash-ability16384-rescored.html">deepseek/deepseek-v4-flash</a></div>
+  <div class="chart-track" aria-label="deepseek/deepseek-v4-flash score 87/100"><span class="chart-bar" style="width: 87.0%"></span></div>
+  <div class="chart-score">87/100</div>
+</div>
+<div class="chart-row">
+  <div><span class="rank-pill">12</span></div>
+  <div class="chart-model"><a href="/reports/v0.3-challenge100-tencent-hy3-preview-ability16384.html">tencent/hy3-preview</a></div>
+  <div class="chart-track" aria-label="tencent/hy3-preview score 85/100"><span class="chart-bar" style="width: 85.0%"></span></div>
+  <div class="chart-score">85/100</div>
+</div></div>
+    </section>
     <section>
       <h2>Benchmark Results</h2>
       <div class="controls">

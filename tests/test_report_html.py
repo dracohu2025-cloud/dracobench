@@ -443,6 +443,10 @@ class ReportHtmlTests(TestCase):
 
         self.assertIn("DracoBench Index", html)
         self.assertIn("deepseek/deepseek-v4-flash", html)
+        self.assertIn("Score Ranking", html)
+        self.assertIn("ranking-chart", html)
+        self.assertIn("chart-bar", html)
+        self.assertIn("rank-pill", html)
         self.assertIn("v0.2-challenge50-deepseek-deepseek-v4-flash-ability16384-rescored.html", html)
         self.assertIn("41/50", html)
         self.assertIn("coding 13/14", html)

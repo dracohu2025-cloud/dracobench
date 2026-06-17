@@ -497,6 +497,7 @@ def build_index_report(summaries: list[dict[str, Any]], title: str = "DracoBench
         if best
         else "n/a"
     )
+    chart_rows = "\n".join(_render_score_chart_row(item, index) for index, item in enumerate(ordered, start=1))
     rows = "\n".join(_render_index_row(item) for item in ordered)
     generated_at = datetime.now().strftime("%Y-%m-%d %H:%M")
     return f"""<!doctype html>
@@ -730,6 +731,76 @@ def build_index_report(summaries: list[dict[str, Any]], title: str = "DracoBench
       font-size: 13px;
     }}
 
+    .ranking-chart {{
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 250, 241, 0.96);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }}
+
+    .chart-row {{
+      display: grid;
+      grid-template-columns: 44px minmax(210px, 320px) minmax(240px, 1fr) 74px;
+      gap: 12px;
+      align-items: center;
+      min-height: 50px;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--line);
+    }}
+
+    .chart-row:last-child {{
+      border-bottom: 0;
+    }}
+
+    .chart-row.top-rank {{
+      background: #fff3c4;
+    }}
+
+    .rank-pill {{
+      width: 30px;
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #cfc5b5;
+      border-radius: 50%;
+      color: var(--muted);
+      background: #fffdf8;
+      font-weight: 700;
+    }}
+
+    .chart-model {{
+      overflow-wrap: anywhere;
+    }}
+
+    .chart-track {{
+      position: relative;
+      min-height: 28px;
+      border-left: 1px solid rgba(112, 104, 93, 0.16);
+      background:
+        linear-gradient(90deg, rgba(112, 104, 93, 0.13) 1px, transparent 1px),
+        #f2eadc;
+      background-size: 20% 100%;
+      border-radius: 8px;
+      overflow: hidden;
+    }}
+
+    .chart-bar {{
+      display: block;
+      height: 28px;
+      min-width: 2px;
+      border-radius: 7px;
+      background: linear-gradient(90deg, #24418f, #0b765f);
+    }}
+
+    .chart-score {{
+      font-family: "SF Mono", "Cascadia Code", "Menlo", monospace;
+      color: #5f574d;
+      font-weight: 700;
+      white-space: nowrap;
+    }}
+
     @media (max-width: 980px) {{
       .summary {{
         grid-template-columns: repeat(2, minmax(150px, 1fr));
@@ -739,11 +810,25 @@ def build_index_report(summaries: list[dict[str, Any]], title: str = "DracoBench
         display: block;
         overflow-x: auto;
       }}
+
+      .chart-row {{
+        grid-template-columns: 40px minmax(180px, 1fr) 70px;
+      }}
+
+      .chart-track {{
+        grid-column: 2 / 4;
+      }}
     }}
 
     @media (max-width: 560px) {{
       .summary {{
         grid-template-columns: 1fr;
+      }}
+
+      .chart-row {{
+        grid-template-columns: 36px minmax(0, 1fr) 64px;
+        gap: 8px;
+        padding: 8px 10px;
       }}
     }}
   </style>
@@ -760,6 +845,10 @@ def build_index_report(summaries: list[dict[str, Any]], title: str = "DracoBench
       <div class="metric"><div class="label">Avg pass rate</div><div class="value">{_percent(avg_pass_rate or 0, 1) if avg_pass_rate is not None else "n/a"}</div></div>
       <div class="metric"><div class="label">Total cost</div><div class="value">${total_cost:.6f}</div></div>
     </div>
+    <section>
+      <h2>Score Ranking</h2>
+      <div class="ranking-chart">{chart_rows or '<div class="chart-row">No runs found.</div>'}</div>
+    </section>
     <section>
       <h2>Benchmark Results</h2>
       <div class="controls">
@@ -854,6 +943,24 @@ def select_preferred_run_paths(run_paths: list[Path]) -> list[Path]:
     rescored_bases = {path.with_name(path.stem.removesuffix("-rescored") + path.suffix) for path in existing if path.stem.endswith("-rescored")}
     selected = [path for path in existing if path.stem.endswith("-rescored") or path not in rescored_bases]
     return sorted(selected, key=lambda path: path.name)
+
+
+def _render_score_chart_row(summary: dict[str, Any], rank: int) -> str:
+    passed = int(summary.get("passed") or 0)
+    total = int(summary.get("case_count") or 0)
+    pass_rate_value = max(0.0, min(1.0, float(summary.get("pass_rate_value") or 0)))
+    width = pass_rate_value * 100
+    model_text = _escape(summary.get("model", "unknown"))
+    detail_href = str(summary.get("detail_href") or "")
+    model_link = f"<a href=\"{_escape(detail_href)}\">{model_text}</a>" if detail_href else model_text
+    top_class = " top-rank" if rank == 1 else ""
+    score_text = f"{passed}/{total}"
+    return f"""<div class="chart-row{top_class}">
+  <div><span class="rank-pill">{rank}</span></div>
+  <div class="chart-model">{model_link}</div>
+  <div class="chart-track" aria-label="{_escape(model_text)} score {score_text}"><span class="chart-bar" style="width: {width:.1f}%"></span></div>
+  <div class="chart-score">{score_text}</div>
+</div>"""
 
 
 def _render_index_row(summary: dict[str, Any]) -> str:
