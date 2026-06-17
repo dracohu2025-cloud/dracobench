@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>DracoBench: moonshotai/kimi-k2.7-code 20260616-115216</title>
+  <style>
+    :root {
+      --paper: #f6f1e7;
+      --ink: #151310;
+      --muted: #6b6254;
+      --line: #d7ccb9;
+      --panel: #fffaf0;
+      --pass: #0b7a5f;
+      --fail: #b23a48;
+      --blue: #245c9a;
+      --gold: #9b6900;
+      --shadow: 0 14px 38px rgba(30, 22, 12, 0.10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(90deg, rgba(21, 19, 16, 0.035) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(21, 19, 16, 0.035) 1px, transparent 1px),
+        var(--paper);
+      background-size: 28px 28px;
+      color: var(--ink);
+      font-family: "Avenir Next", "Noto Sans SC", "Source Han Sans SC", sans-serif;
+      line-height: 1.5;
+    }
+
+    header {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 30px 24px 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 38px;
+      line-height: 1.06;
+      letter-spacing: 0;
+    }
+
+    .model {
+      margin-top: 10px;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+
+    .summary {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 12px 24px 24px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 250, 240, 0.94);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      min-height: 96px;
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .metric .value {
+      margin-top: 8px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 30px;
+      line-height: 1;
+    }
+
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px 32px;
+    }
+
+    section {
+      margin-top: 20px;
+    }
+
+    h2 {
+      font-size: 18px;
+      margin: 0 0 10px;
+      letter-spacing: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      background: #efe5d5;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .status-pass {
+      color: var(--pass);
+      font-weight: 700;
+    }
+
+    .status-fail {
+      color: var(--fail);
+      font-weight: 700;
+    }
+
+    .failures {
+      display: grid;
+      gap: 12px;
+    }
+
+    .failure {
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--fail);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .failure h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .failure-label {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .analysis {
+      margin-top: 8px;
+      border: 1px solid #e3c977;
+      border-left: 4px solid var(--gold);
+      border-radius: 8px;
+      background: #fff4cf;
+      padding: 10px 12px;
+      color: #3f3218;
+    }
+
+    pre {
+      margin: 8px 0 0;
+      max-height: 260px;
+      overflow: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      border-radius: 8px;
+      background: #1d1a16;
+      color: #f8ead0;
+      padding: 10px;
+    }
+
+    code, pre {
+      font-family: "SF Mono", "Cascadia Code", "Menlo", monospace;
+      font-size: 13px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    input[type="search"] {
+      width: min(460px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 10px 12px;
+      font: inherit;
+    }
+
+    @media (max-width: 900px) {
+      .summary {
+        grid-template-columns: repeat(2, minmax(140px, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>DracoBench: moonshotai/kimi-k2.7-code 20260616-115216</h1>
+    <div class="model">moonshotai/kimi-k2.7-code</div>
+  </header>
+  <div class="summary">
+    <div class="metric"><div class="label">Pass rate</div><div class="value">100.0%</div></div>
+    <div class="metric"><div class="label">Cases</div><div class="value">7/7</div></div>
+    <div class="metric"><div class="label">Avg latency</div><div class="value">6728 ms</div></div>
+    <div class="metric"><div class="label">Total cost</div><div class="value">$0.005034</div></div>
+    <div class="metric"><div class="label">Prompt tokens</div><div class="value">614</div></div>
+    <div class="metric"><div class="label">Completion tokens</div><div class="value">1164</div></div>
+    <div class="metric"><div class="label">Reasoning tokens</div><div class="value">1074</div></div>
+    <div class="metric"><div class="label">Errors</div><div class="value">0</div></div>
+  </div>
+  <main>
+    <section>
+      <h2>By Suite</h2>
+      <table>
+        <thead><tr><th>Suite</th><th>Cases</th><th>Passed</th><th>Pass rate</th><th>Avg latency</th><th>Cost</th></tr></thead>
+        <tbody><tr data-suite="chinese_writing"><td><code>chinese_writing</code></td><td>1</td><td>1</td><td>100.0%</td><td>8001 ms</td><td>$0.001390</td></tr>
+<tr data-suite="coding"><td><code>coding</code></td><td>1</td><td>1</td><td>100.0%</td><td>4753 ms</td><td>$0.000904</td></tr>
+<tr data-suite="debugging"><td><code>debugging</code></td><td>1</td><td>1</td><td>100.0%</td><td>19092 ms</td><td>$0.001190</td></tr>
+<tr data-suite="instruction_following"><td><code>instruction_following</code></td><td>1</td><td>1</td><td>100.0%</td><td>3227 ms</td><td>$0.000507</td></tr>
+<tr data-suite="knowledge"><td><code>knowledge</code></td><td>1</td><td>1</td><td>100.0%</td><td>2208 ms</td><td>$0.000273</td></tr>
+<tr data-suite="rag_long_context"><td><code>rag_long_context</code></td><td>1</td><td>1</td><td>100.0%</td><td>2976 ms</td><td>$0.000507</td></tr>
+<tr data-suite="reasoning"><td><code>reasoning</code></td><td>1</td><td>1</td><td>100.0%</td><td>6842 ms</td><td>$0.000262</td></tr></tbody>
+      </table>
+    </section>
+    <section>
+      <h2>Failure Examples</h2>
+      <div class="failures"><p>No failures.</p></div>
+    </section>
+    <section>
+      <h2>Case Details</h2>
+      <div class="controls">
+        <input id="search" type="search" placeholder="Search case id, suite, output">
+      </div>
+      <table id="case-table">
+        <thead><tr><th>Case</th><th>Suite</th><th>Status</th><th>Score</th><th>Latency</th><th>Cost</th><th>Finish</th></tr></thead>
+        <tbody><tr data-suite="knowledge"><td><code>knowledge-common-001</code></td><td>knowledge</td><td class="status-pass">PASS</td><td>1.0</td><td>2208 ms</td><td>$0.000273</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>reasoning-logic-001</code></td><td>reasoning</td><td class="status-pass">PASS</td><td>1.0</td><td>6842 ms</td><td>$0.000262</td><td>stop</td></tr>
+<tr data-suite="instruction_following"><td><code>if-json-001</code></td><td>instruction_following</td><td class="status-pass">PASS</td><td>1.0</td><td>3227 ms</td><td>$0.000507</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>coding-python-001</code></td><td>coding</td><td class="status-pass">PASS</td><td>1.0</td><td>4753 ms</td><td>$0.000904</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>debugging-python-001</code></td><td>debugging</td><td class="status-pass">PASS</td><td>1.0</td><td>19092 ms</td><td>$0.001190</td><td>stop</td></tr>
+<tr data-suite="chinese_writing"><td><code>zh-writing-001</code></td><td>chinese_writing</td><td class="status-pass">PASS</td><td>1.0</td><td>8001 ms</td><td>$0.001390</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>rag-long-context-001</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td>1.0</td><td>2976 ms</td><td>$0.000507</td><td>stop</td></tr></tbody>
+      </table>
+    </section>
+  </main>
+  <script>
+    const search = document.querySelector('#search');
+    const rows = [...document.querySelectorAll('#case-table tbody tr')];
+    search.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      for (const row of rows) {
+        row.style.display = !query || row.textContent.toLowerCase().includes(query) ? '' : 'none';
+      }
+    });
+  </script>
+</body>
+</html>

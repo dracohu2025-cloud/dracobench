@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>DracoBench v0.2-challenge: moonshotai/kimi-k2.7-code ability4096 (rescored)</title>
+  <style>
+    :root {
+      --paper: #f6f1e7;
+      --ink: #151310;
+      --muted: #6b6254;
+      --line: #d7ccb9;
+      --panel: #fffaf0;
+      --pass: #0b7a5f;
+      --fail: #b23a48;
+      --blue: #245c9a;
+      --gold: #9b6900;
+      --shadow: 0 14px 38px rgba(30, 22, 12, 0.10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(90deg, rgba(21, 19, 16, 0.035) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(21, 19, 16, 0.035) 1px, transparent 1px),
+        var(--paper);
+      background-size: 28px 28px;
+      color: var(--ink);
+      font-family: "Avenir Next", "Noto Sans SC", "Source Han Sans SC", sans-serif;
+      line-height: 1.5;
+    }
+
+    header {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 30px 24px 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 38px;
+      line-height: 1.06;
+      letter-spacing: 0;
+    }
+
+    .model {
+      margin-top: 10px;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+
+    .summary {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 12px 24px 24px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 250, 240, 0.94);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      min-height: 96px;
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .metric .value {
+      margin-top: 8px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 30px;
+      line-height: 1;
+    }
+
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px 32px;
+    }
+
+    section {
+      margin-top: 20px;
+    }
+
+    h2 {
+      font-size: 18px;
+      margin: 0 0 10px;
+      letter-spacing: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      background: #efe5d5;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .status-pass {
+      color: var(--pass);
+      font-weight: 700;
+    }
+
+    .status-fail {
+      color: var(--fail);
+      font-weight: 700;
+    }
+
+    .failures {
+      display: grid;
+      gap: 12px;
+    }
+
+    .failure {
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--fail);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .failure h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .failure-label {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .analysis {
+      margin-top: 8px;
+      border: 1px solid #e3c977;
+      border-left: 4px solid var(--gold);
+      border-radius: 8px;
+      background: #fff4cf;
+      padding: 10px 12px;
+      color: #3f3218;
+    }
+
+    pre {
+      margin: 8px 0 0;
+      max-height: 260px;
+      overflow: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      border-radius: 8px;
+      background: #1d1a16;
+      color: #f8ead0;
+      padding: 10px;
+    }
+
+    code, pre {
+      font-family: "SF Mono", "Cascadia Code", "Menlo", monospace;
+      font-size: 13px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    input[type="search"] {
+      width: min(460px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 10px 12px;
+      font: inherit;
+    }
+
+    @media (max-width: 900px) {
+      .summary {
+        grid-template-columns: repeat(2, minmax(140px, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>DracoBench v0.2-challenge: moonshotai/kimi-k2.7-code ability4096 (rescored)</h1>
+    <div class="model">moonshotai/kimi-k2.7-code</div>
+  </header>
+  <div class="summary">
+    <div class="metric"><div class="label">Pass rate</div><div class="value">93.3%</div></div>
+    <div class="metric"><div class="label">Cases</div><div class="value">28/30</div></div>
+    <div class="metric"><div class="label">Avg latency</div><div class="value">14491 ms</div></div>
+    <div class="metric"><div class="label">Total cost</div><div class="value">$0.063440</div></div>
+    <div class="metric"><div class="label">Prompt tokens</div><div class="value">3100</div></div>
+    <div class="metric"><div class="label">Completion tokens</div><div class="value">15987</div></div>
+    <div class="metric"><div class="label">Reasoning tokens</div><div class="value">14261</div></div>
+    <div class="metric"><div class="label">Errors</div><div class="value">0</div></div>
+  </div>
+  <main>
+    <section>
+      <h2>By Suite</h2>
+      <table>
+        <thead><tr><th>Suite</th><th>Cases</th><th>Passed</th><th>Pass rate</th><th>Avg latency</th><th>Cost</th></tr></thead>
+        <tbody><tr data-suite="chinese_writing"><td><code>chinese_writing</code></td><td>2</td><td>2</td><td>100.0%</td><td>9626 ms</td><td>$0.003179</td></tr>
+<tr data-suite="coding"><td><code>coding</code></td><td>8</td><td>6</td><td>75.0%</td><td>23608 ms</td><td>$0.020734</td></tr>
+<tr data-suite="debugging"><td><code>debugging</code></td><td>8</td><td>8</td><td>100.0%</td><td>9317 ms</td><td>$0.010429</td></tr>
+<tr data-suite="instruction_following"><td><code>instruction_following</code></td><td>3</td><td>3</td><td>100.0%</td><td>5679 ms</td><td>$0.001690</td></tr>
+<tr data-suite="rag_long_context"><td><code>rag_long_context</code></td><td>4</td><td>4</td><td>100.0%</td><td>23980 ms</td><td>$0.023408</td></tr>
+<tr data-suite="reasoning"><td><code>reasoning</code></td><td>5</td><td>5</td><td>100.0%</td><td>7823 ms</td><td>$0.004000</td></tr></tbody>
+      </table>
+    </section>
+    <section>
+      <h2>Failure Examples</h2>
+      <div class="failures"><article class="failure" data-suite="coding">
+  <h3>challenge-coding-004</h3>
+  <div>Suite: <code>coding</code></div>
+  <div>Finish: <code>stop</code></div>
+  
+  <div class="failure-label">Prompt</div>
+  <pre>只输出 Python 代码，不要解释。实现 solve(capacity: int, ops: list[str]) -&gt; list[int]，模拟 LRU cache。ops 包含 &quot;put key value&quot; 和 &quot;get key&quot;。get 返回 value，不存在返回 -1。put 已存在 key 要更新并变成最近使用。容量为 0 时所有 get 都返回 -1。</pre>
+  <div class="failure-label">Mistake Analysis</div>
+  <div class="analysis">模型把题目中的 key 错误假设为整数，并对 parts[1] 做 int 转换；测试使用字符串 key，因此在解析 &#x27;a&#x27; 这类 key 时直接抛出 ValueError。</div>
+  <div class="failure-label">Scorer Details</div>
+  <pre>{
+  &quot;returncode&quot;: 1,
+  &quot;stdout&quot;: &quot;&quot;,
+  &quot;stderr&quot;: &quot;Traceback (most recent call last):\n  File \&quot;/var/folders/x_/4cht1kfj1_j31gdv5w01sgmw0000gn/T/dracobench-code-uuyjuakr/test_solution.py\&quot;, line 4, in &lt;module&gt;\n    assert solution.solve(2, ops) == [1, -1, 1, 3]\n           ^^^^^^^^^^^^^^^^^^^^^^\n  File \&quot;/private/var/folders/x_/4cht1kfj1_j31gdv5w01sgmw0000gn/T/dracobench-code-uuyjuakr/solution.py\&quot;, line 14, in solve\n    key = int(parts[1])\n          ^^^^^^^^^^^^^\nValueError: invalid literal for int() with base 10: &#x27;a&#x27;\n&quot;
+}</pre>
+  <div class="failure-label">Output</div>
+  <pre>```python
+from collections import OrderedDict
+
+def solve(capacity: int, ops: list[str]) -&gt; list[int]:
+    cache: OrderedDict[int, int] = OrderedDict()
+    res: list[int] = []
+    if capacity == 0:
+        for op in ops:
+            if op.startswith(&quot;get&quot;):
+                res.append(-1)
+        return res
+    for op in ops:
+        parts = op.split()
+        if parts[0] == &quot;put&quot;:
+            key = int(parts[1])
+            value = int(parts[2])
+            if key in cache:
+                cache.move_to_end(key)
+            else:
+                if len(cache) == capacity:
+                    cache.popitem(last=False)
+                cache[key] = value
+        else:
+            key = int(parts[1])
+            if key in cache:
+                cache.move_to_end(key)
+                res.append(cache[key])
+            else:
+                res.append(-1)
+    return res
+```</pre>
+</article>
+<article class="failure" data-suite="coding">
+  <h3>challenge-coding-008</h3>
+  <div>Suite: <code>coding</code></div>
+  <div>Finish: <code>stop</code></div>
+  
+  <div class="failure-label">Prompt</div>
+  <pre>只输出 Python 代码，不要解释。实现 solve(rows: list[dict]) -&gt; list[dict]。每行有 user、ts、value。对每个 user 保留 ts 最大的一行；若 ts 相同，保留在输入中更靠后的行。输出按 user 字典序排序。</pre>
+  <div class="failure-label">Mistake Analysis</div>
+  <div class="analysis">模型大体找到了每个 user 的候选记录，但返回列表时排序/解包结构错误，把内部保存的元组结构带进了最终输出，导致结果和期望不一致。</div>
+  <div class="failure-label">Scorer Details</div>
+  <pre>{
+  &quot;returncode&quot;: 1,
+  &quot;stdout&quot;: &quot;&quot;,
+  &quot;stderr&quot;: &quot;Traceback (most recent call last):\n  File \&quot;/var/folders/x_/4cht1kfj1_j31gdv5w01sgmw0000gn/T/dracobench-code-380trss2/test_solution.py\&quot;, line 4, in &lt;module&gt;\n    assert solution.solve(rows) == [{&#x27;user&#x27;:&#x27;a&#x27;,&#x27;ts&#x27;:2,&#x27;value&#x27;:&#x27;x&#x27;}, {&#x27;user&#x27;:&#x27;b&#x27;,&#x27;ts&#x27;:3,&#x27;value&#x27;:&#x27;new&#x27;}]\nAssertionError\n&quot;
+}</pre>
+  <div class="failure-label">Output</div>
+  <pre>```python
+def solve(rows: list[dict]) -&gt; list[dict]:
+    best = {}
+    for i, row in enumerate(rows):
+        user = row[&#x27;user&#x27;]
+        key = (row[&#x27;ts&#x27;], i)
+        if user not in best or key &gt;= best[user][0]:
+            best[user] = (key, row)
+    return [row for _, row in sorted(best.items())]
+```</pre>
+</article></div>
+    </section>
+    <section>
+      <h2>Case Details</h2>
+      <div class="controls">
+        <input id="search" type="search" placeholder="Search case id, suite, output">
+      </div>
+      <table id="case-table">
+        <thead><tr><th>Case</th><th>Suite</th><th>Status</th><th>Score</th><th>Latency</th><th>Cost</th><th>Finish</th></tr></thead>
+        <tbody><tr data-suite="coding"><td><code>challenge-coding-001</code></td><td>coding</td><td class="status-pass">PASS</td><td>1.0</td><td>16737 ms</td><td>$0.001545</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-002</code></td><td>coding</td><td class="status-pass">PASS</td><td>1.0</td><td>23849 ms</td><td>$0.002877</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-003</code></td><td>coding</td><td class="status-pass">PASS</td><td>1.0</td><td>37479 ms</td><td>$0.003021</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-004</code></td><td>coding</td><td class="status-fail">FAIL</td><td>0.0</td><td>25401 ms</td><td>$0.001955</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-005</code></td><td>coding</td><td class="status-pass">PASS</td><td>1.0</td><td>29902 ms</td><td>$0.002480</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-006</code></td><td>coding</td><td class="status-pass">PASS</td><td>1.0</td><td>7946 ms</td><td>$0.001295</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-007</code></td><td>coding</td><td class="status-pass">PASS</td><td>1.0</td><td>24001 ms</td><td>$0.006090</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>challenge-coding-008</code></td><td>coding</td><td class="status-fail">FAIL</td><td>0.0</td><td>23546 ms</td><td>$0.001471</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-001</code></td><td>debugging</td><td class="status-pass">PASS</td><td>1.0</td><td>40229 ms</td><td>$0.003066</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-002</code></td><td>debugging</td><td class="status-pass">PASS</td><td>1.0</td><td>4687 ms</td><td>$0.001280</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-003</code></td><td>debugging</td><td class="status-pass">PASS</td><td>1.0</td><td>4836 ms</td><td>$0.001202</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-004</code></td><td>debugging</td><td class="status-pass">PASS</td><td>1.0</td><td>4534 ms</td><td>$0.000686</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-005</code></td><td>debugging</td><td class="status-pass">PASS</td><td>1.0</td><td>4765 ms</td><td>$0.001127</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-006</code></td><td>debugging</td><td class="status-pass">PASS</td><td>1.0</td><td>4162 ms</td><td>$0.000797</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-007</code></td><td>debugging</td><td class="status-pass">PASS</td><td>1.0</td><td>5013 ms</td><td>$0.001095</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>challenge-debugging-008</code></td><td>debugging</td><td class="status-pass">PASS</td><td>1.0</td><td>6313 ms</td><td>$0.001176</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-001</code></td><td>reasoning</td><td class="status-pass">PASS</td><td>1.0</td><td>12398 ms</td><td>$0.000375</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-002</code></td><td>reasoning</td><td class="status-pass">PASS</td><td>1.0</td><td>16612 ms</td><td>$0.001908</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-003</code></td><td>reasoning</td><td class="status-pass">PASS</td><td>1.0</td><td>2370 ms</td><td>$0.000419</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-004</code></td><td>reasoning</td><td class="status-pass">PASS</td><td>1.0</td><td>3050 ms</td><td>$0.000612</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>challenge-reasoning-005</code></td><td>reasoning</td><td class="status-pass">PASS</td><td>1.0</td><td>4685 ms</td><td>$0.000687</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-001</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td>1.0</td><td>23136 ms</td><td>$0.009613</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-002</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td>1.0</td><td>16690 ms</td><td>$0.001323</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-003</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td>1.0</td><td>52635 ms</td><td>$0.012004</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>challenge-rag-004</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td>1.0</td><td>3458 ms</td><td>$0.000468</td><td>stop</td></tr>
+<tr data-suite="instruction_following"><td><code>challenge-if-001</code></td><td>instruction_following</td><td class="status-pass">PASS</td><td>1.0</td><td>2371 ms</td><td>$0.000730</td><td>stop</td></tr>
+<tr data-suite="instruction_following"><td><code>challenge-if-002</code></td><td>instruction_following</td><td class="status-pass">PASS</td><td>1.0</td><td>2637 ms</td><td>$0.000277</td><td>stop</td></tr>
+<tr data-suite="instruction_following"><td><code>challenge-if-003</code></td><td>instruction_following</td><td class="status-pass">PASS</td><td>1.0</td><td>12030 ms</td><td>$0.000683</td><td>stop</td></tr>
+<tr data-suite="chinese_writing"><td><code>challenge-zh-writing-001</code></td><td>chinese_writing</td><td class="status-pass">PASS</td><td>1.0</td><td>5311 ms</td><td>$0.001778</td><td>stop</td></tr>
+<tr data-suite="chinese_writing"><td><code>challenge-zh-writing-002</code></td><td>chinese_writing</td><td class="status-pass">PASS</td><td>1.0</td><td>13941 ms</td><td>$0.001401</td><td>stop</td></tr></tbody>
+      </table>
+    </section>
+  </main>
+  <script>
+    const search = document.querySelector('#search');
+    const rows = [...document.querySelectorAll('#case-table tbody tr')];
+    search.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      for (const row of rows) {
+        row.style.display = !query || row.textContent.toLowerCase().includes(query) ? '' : 'none';
+      }
+    });
+  </script>
+</body>
+</html>

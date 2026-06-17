@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>DracoBench v0.3-challenge100 ability16384 Results</title>
+  <style>
+    :root {
+      --paper: #f7f3ea;
+      --ink: #171410;
+      --muted: #70685d;
+      --line: #d8ccba;
+      --panel: #fffaf1;
+      --panel-strong: #efe6d7;
+      --pass: #0b765f;
+      --fail: #ad3345;
+      --link: #195f90;
+      --shadow: 0 14px 34px rgba(31, 24, 15, 0.10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(23, 20, 16, 0.035) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(23, 20, 16, 0.035) 1px, transparent 1px),
+        var(--paper);
+      background-size: 28px 28px;
+      font-family: "Avenir Next", "Noto Sans SC", "Source Han Sans SC", sans-serif;
+      line-height: 1.5;
+    }
+
+    header, main {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    header {
+      padding-top: 30px;
+      padding-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 38px;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .subhead {
+      margin-top: 8px;
+      color: var(--muted);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 12px;
+      margin: 14px 0 22px;
+    }
+
+    .metric {
+      min-height: 94px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 250, 241, 0.96);
+      box-shadow: var(--shadow);
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .metric .value {
+      margin-top: 8px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 30px;
+      line-height: 1;
+    }
+
+    section {
+      margin: 20px 0 34px;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    input[type="search"] {
+      width: min(520px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 10px 12px;
+      font: inherit;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--panel-strong);
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    a {
+      color: var(--link);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    code {
+      font-family: "SF Mono", "Cascadia Code", "Menlo", monospace;
+      font-size: 13px;
+    }
+
+    .model-cell {
+      min-width: 250px;
+      overflow-wrap: anywhere;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .status-pass {
+      color: var(--pass);
+      font-weight: 700;
+    }
+
+    .status-fail {
+      color: var(--fail);
+      font-weight: 700;
+    }
+
+    .badge {
+      display: inline-block;
+      margin: 2px 4px 2px 0;
+      padding: 2px 7px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #f7ecda;
+      color: #4d463e;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .bar {
+      width: 100%;
+      min-width: 120px;
+      height: 8px;
+      border-radius: 999px;
+      background: #eadfce;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      background: var(--pass);
+    }
+
+    .token-cell {
+      min-width: 160px;
+      white-space: nowrap;
+    }
+
+    .token-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      line-height: 1.45;
+    }
+
+    .token-label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .note {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 980px) {
+      .summary {
+        grid-template-columns: repeat(2, minmax(150px, 1fr));
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .summary {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>DracoBench v0.3-challenge100 ability16384 Results</h1>
+    <div class="subhead">汇总已生成的 DracoBench 运行结果，点击模型名称进入逐题详情。生成日期：2026-06-17 01:17</div>
+  </header>
+  <main>
+    <div class="summary">
+      <div class="metric"><div class="label">Runs</div><div class="value">9</div></div>
+      <div class="metric"><div class="label">Best score</div><div class="value">98/100</div></div>
+      <div class="metric"><div class="label">Avg pass rate</div><div class="value">90.8%</div></div>
+      <div class="metric"><div class="label">Total cost</div><div class="value">$1.196011</div></div>
+    </div>
+    <section>
+      <h2>Benchmark Results</h2>
+      <div class="controls">
+        <input id="search" type="search" placeholder="Search model, mode, suite, run file">
+      </div>
+      <p class="note">Latency 是平均单题延迟；Total Time 是根据逐题 started_at 和 latency_ms 估算的整轮运行耗时。Token Usage 汇总每次完整运行的输入、输出侧和 hidden reasoning 消耗：Prompt = 输入题目与系统提示；Completion = 输出侧总量；Reasoning = hidden thinking/reasoning token。</p>
+      <table id="results-table">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Run</th>
+            <th>Mode</th>
+            <th>Score</th>
+            <th>Suite Breakdown</th>
+            <th>Latency</th>
+            <th>Total Time</th>
+            <th>Cost</th>
+            <th>Token Usage</th>
+            <th>Finish</th>
+          </tr>
+        </thead>
+        <tbody><tr>
+  <td class="model-cell"><a href="v0.3-challenge100-moonshotai-kimi-k2-7-code-ability16384-rescored.html">moonshotai/kimi-k2.7-code</a><div class="muted"><code>v0.3-challenge100-moonshotai-kimi-k2-7-code-ability16384-rescored</code> <span class="badge">rescored</span></div></td>
+  <td><a href="../runs/v0.3-challenge100-moonshotai-kimi-k2-7-code-ability16384-rescored.jsonl">JSONL</a></td>
+  <td>ability16384<br>temp=mixed</td>
+  <td><span class="status-fail">98/100</span><div>98.0%</div><div class="bar"><span style="width: 98.0%"></span></div></td>
+  <td><span class="badge">chinese_writing 4/4</span> <span class="badge">coding 27/28</span> <span class="badge">debugging 19/19</span> <span class="badge">instruction_following 6/6</span> <span class="badge">rag_long_context 18/18</span> <span class="badge">reasoning 24/25</span></td>
+  <td>9780 ms</td>
+  <td>16m 20s</td>
+  <td>$0.189826</td>
+  <td class="token-cell"><div class="token-row"><span class="token-label">Prompt</span><span>9984</span></div><div class="token-row"><span class="token-label">Completion</span><span>46691</span></div><div class="token-row"><span class="token-label">Reasoning</span><span>38156</span></div></td>
+  <td>stop:100</td>
+</tr>
+<tr>
+  <td class="model-cell"><a href="v0.3-challenge100-z-ai-glm-5-1-ability16384-rescored.html">z-ai/glm-5.1</a><div class="muted"><code>v0.3-challenge100-z-ai-glm-5-1-ability16384-rescored</code> <span class="badge">rescored</span></div></td>
+  <td><a href="../runs/v0.3-challenge100-z-ai-glm-5-1-ability16384-rescored.jsonl">JSONL</a></td>
+  <td>ability16384<br>temp=mixed</td>
+  <td><span class="status-fail">95/100</span><div>95.0%</div><div class="bar"><span style="width: 95.0%"></span></div></td>
+  <td><span class="badge">chinese_writing 4/4</span> <span class="badge">coding 25/28</span> <span class="badge">debugging 19/19</span> <span class="badge">instruction_following 6/6</span> <span class="badge">rag_long_context 17/18</span> <span class="badge">reasoning 24/25</span></td>
+  <td>23829 ms</td>
+  <td>39m 45s</td>
+  <td>$0.311060</td>
+  <td class="token-cell"><div class="token-row"><span class="token-label">Prompt</span><span>9373</span></div><div class="token-row"><span class="token-label">Completion</span><span>76288</span></div><div class="token-row"><span class="token-label">Reasoning</span><span>65021</span></div></td>
+  <td>length:1, stop:98, unknown:1</td>
+</tr>
+<tr>
+  <td class="model-cell"><a href="v0.3-challenge100-qwen-qwen3-7-plus-ability16384-rescored.html">qwen/qwen3.7-plus</a><div class="muted"><code>v0.3-challenge100-qwen-qwen3-7-plus-ability16384-rescored</code> <span class="badge">rescored</span></div></td>
+  <td><a href="../runs/v0.3-challenge100-qwen-qwen3-7-plus-ability16384-rescored.jsonl">JSONL</a></td>
+  <td>ability16384<br>temp=mixed</td>
+  <td><span class="status-fail">93/100</span><div>93.0%</div><div class="bar"><span style="width: 93.0%"></span></div></td>
+  <td><span class="badge">chinese_writing 4/4</span> <span class="badge">coding 25/28</span> <span class="badge">debugging 19/19</span> <span class="badge">instruction_following 6/6</span> <span class="badge">rag_long_context 15/18</span> <span class="badge">reasoning 24/25</span></td>
+  <td>22070 ms</td>
+  <td>37m 15s</td>
+  <td>$0.151311</td>
+  <td class="token-cell"><div class="token-row"><span class="token-label">Prompt</span><span>10627</span></div><div class="token-row"><span class="token-label">Completion</span><span>115555</span></div><div class="token-row"><span class="token-label">Reasoning</span><span>108335</span></div></td>
+  <td>stop:100</td>
+</tr>
+<tr>
+  <td class="model-cell"><a href="v0.3-challenge100-xiaomi-mimo-v2-5-pro-ability16384.html">xiaomi/mimo-v2.5-pro</a><div class="muted"><code>v0.3-challenge100-xiaomi-mimo-v2-5-pro-ability16384</code></div></td>
+  <td><a href="../runs/v0.3-challenge100-xiaomi-mimo-v2-5-pro-ability16384.jsonl">JSONL</a></td>
+  <td>ability16384<br>temp=mixed</td>
+  <td><span class="status-fail">92/100</span><div>92.0%</div><div class="bar"><span style="width: 92.0%"></span></div></td>
+  <td><span class="badge">chinese_writing 4/4</span> <span class="badge">coding 24/28</span> <span class="badge">debugging 19/19</span> <span class="badge">instruction_following 6/6</span> <span class="badge">rag_long_context 17/18</span> <span class="badge">reasoning 22/25</span></td>
+  <td>26795 ms</td>
+  <td>44m 41s</td>
+  <td>$0.087083</td>
+  <td class="token-cell"><div class="token-row"><span class="token-label">Prompt</span><span>10368</span></div><div class="token-row"><span class="token-label">Completion</span><span>83683</span></div><div class="token-row"><span class="token-label">Reasoning</span><span>74311</span></div></td>
+  <td>stop:100</td>
+</tr>
+<tr>
+  <td class="model-cell"><a href="v0.3-challenge100-deepseek-deepseek-v4-pro-ability16384-rescored.html">deepseek/deepseek-v4-pro</a><div class="muted"><code>v0.3-challenge100-deepseek-deepseek-v4-pro-ability16384-rescored</code> <span class="badge">rescored</span></div></td>
+  <td><a href="../runs/v0.3-challenge100-deepseek-deepseek-v4-pro-ability16384-rescored.jsonl">JSONL</a></td>
+  <td>ability16384<br>temp=mixed</td>
+  <td><span class="status-fail">91/100</span><div>91.0%</div><div class="bar"><span style="width: 91.0%"></span></div></td>
+  <td><span class="badge">chinese_writing 4/4</span> <span class="badge">coding 26/28</span> <span class="badge">debugging 19/19</span> <span class="badge">instruction_following 6/6</span> <span class="badge">rag_long_context 16/18</span> <span class="badge">reasoning 20/25</span></td>
+  <td>11827 ms</td>
+  <td>19m 45s</td>
+  <td>$0.110125</td>
+  <td class="token-cell"><div class="token-row"><span class="token-label">Prompt</span><span>9385</span></div><div class="token-row"><span class="token-label">Completion</span><span>44207</span></div><div class="token-row"><span class="token-label">Reasoning</span><span>36756</span></div></td>
+  <td>stop:100</td>
+</tr>
+<tr>
+  <td class="model-cell"><a href="v0.3-challenge100-minimax-minimax-m3-ability16384-rescored.html">minimax/minimax-m3</a><div class="muted"><code>v0.3-challenge100-minimax-minimax-m3-ability16384-rescored</code> <span class="badge">rescored</span></div></td>
+  <td><a href="../runs/v0.3-challenge100-minimax-minimax-m3-ability16384-rescored.jsonl">JSONL</a></td>
+  <td>ability16384<br>temp=mixed</td>
+  <td><span class="status-fail">88/100</span><div>88.0%</div><div class="bar"><span style="width: 88.0%"></span></div></td>
+  <td><span class="badge">chinese_writing 4/4</span> <span class="badge">coding 26/28</span> <span class="badge">debugging 19/19</span> <span class="badge">instruction_following 5/6</span> <span class="badge">rag_long_context 17/18</span> <span class="badge">reasoning 17/25</span></td>
+  <td>19630 ms</td>
+  <td>32m 45s</td>
+  <td>$0.124947</td>
+  <td class="token-cell"><div class="token-row"><span class="token-label">Prompt</span><span>25254</span></div><div class="token-row"><span class="token-label">Completion</span><span>81004</span></div><div class="token-row"><span class="token-label">Reasoning</span><span>65731</span></div></td>
+  <td>length:1, stop:99</td>
+</tr>
+<tr>
+  <td class="model-cell"><a href="v0.3-challenge100-stepfun-step-3-7-flash-ability16384-rescored.html">stepfun/step-3.7-flash</a><div class="muted"><code>v0.3-challenge100-stepfun-step-3-7-flash-ability16384-rescored</code> <span class="badge">rescored</span></div></td>
+  <td><a href="../runs/v0.3-challenge100-stepfun-step-3-7-flash-ability16384-rescored.jsonl">JSONL</a></td>
+  <td>ability16384<br>temp=mixed</td>
+  <td><span class="status-fail">88/100</span><div>88.0%</div><div class="bar"><span style="width: 88.0%"></span></div></td>
+  <td><span class="badge">chinese_writing 4/4</span> <span class="badge">coding 22/28</span> <span class="badge">debugging 16/19</span> <span class="badge">instruction_following 6/6</span> <span class="badge">rag_long_context 15/18</span> <span class="badge">reasoning 25/25</span></td>
+  <td>14435 ms</td>
+  <td>25m 06s</td>
+  <td>$0.163351</td>
+  <td class="token-cell"><div class="token-row"><span class="token-label">Prompt</span><span>10685</span></div><div class="token-row"><span class="token-label">Completion</span><span>140186</span></div><div class="token-row"><span class="token-label">Reasoning</span><span>0</span></div></td>
+  <td>length:2, stop:98</td>
+</tr>
+<tr>
+  <td class="model-cell"><a href="v0.3-challenge100-deepseek-deepseek-v4-flash-ability16384-rescored.html">deepseek/deepseek-v4-flash</a><div class="muted"><code>v0.3-challenge100-deepseek-deepseek-v4-flash-ability16384-rescored</code> <span class="badge">rescored</span></div></td>
+  <td><a href="../runs/v0.3-challenge100-deepseek-deepseek-v4-flash-ability16384-rescored.jsonl">JSONL</a></td>
+  <td>ability16384<br>temp=mixed</td>
+  <td><span class="status-fail">87/100</span><div>87.0%</div><div class="bar"><span style="width: 87.0%"></span></div></td>
+  <td><span class="badge">chinese_writing 4/4</span> <span class="badge">coding 24/28</span> <span class="badge">debugging 19/19</span> <span class="badge">instruction_following 6/6</span> <span class="badge">rag_long_context 15/18</span> <span class="badge">reasoning 19/25</span></td>
+  <td>8094 ms</td>
+  <td>13m 32s</td>
+  <td>$0.009602</td>
+  <td class="token-cell"><div class="token-row"><span class="token-label">Prompt</span><span>9572</span></div><div class="token-row"><span class="token-label">Completion</span><span>31505</span></div><div class="token-row"><span class="token-label">Reasoning</span><span>24626</span></div></td>
+  <td>stop:100</td>
+</tr>
+<tr>
+  <td class="model-cell"><a href="v0.3-challenge100-tencent-hy3-preview-ability16384.html">tencent/hy3-preview</a><div class="muted"><code>v0.3-challenge100-tencent-hy3-preview-ability16384</code></div></td>
+  <td><a href="../runs/v0.3-challenge100-tencent-hy3-preview-ability16384.jsonl">JSONL</a></td>
+  <td>ability16384<br>temp=mixed</td>
+  <td><span class="status-fail">85/100</span><div>85.0%</div><div class="bar"><span style="width: 85.0%"></span></div></td>
+  <td><span class="badge">chinese_writing 4/4</span> <span class="badge">coding 21/28</span> <span class="badge">debugging 15/19</span> <span class="badge">instruction_following 6/6</span> <span class="badge">rag_long_context 16/18</span> <span class="badge">reasoning 23/25</span></td>
+  <td>19290 ms</td>
+  <td>32m 10s</td>
+  <td>$0.048706</td>
+  <td class="token-cell"><div class="token-row"><span class="token-label">Prompt</span><span>9930</span></div><div class="token-row"><span class="token-label">Completion</span><span>180894</span></div><div class="token-row"><span class="token-label">Reasoning</span><span>142453</span></div></td>
+  <td>length:1, stop:96, unknown:3</td>
+</tr></tbody>
+      </table>
+    </section>
+  </main>
+  <script>
+    const search = document.querySelector('#search');
+    const rows = [...document.querySelectorAll('#results-table tbody tr')];
+    search.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      for (const row of rows) {
+        row.style.display = !query || row.textContent.toLowerCase().includes(query) ? '' : 'none';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+.DS_Store
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.playwright-mcp/
+.spec-workflow/
+build/
+dist/
+*.egg-info/
+public/
+runs/*retry429*.jsonl

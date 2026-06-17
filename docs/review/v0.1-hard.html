@@ -1,0 +1,1623 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>DracoBench v0.1-hard Case Review</title>
+  <style>
+    :root {
+      --paper: #f7f3ea;
+      --ink: #171512;
+      --muted: #625d52;
+      --line: #d8d0c0;
+      --panel: #fffaf0;
+      --teal: #007f7a;
+      --red: #b23a48;
+      --blue: #2b5c9e;
+      --amber: #9a6500;
+      --shadow: 0 12px 36px rgba(26, 20, 12, 0.10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(90deg, rgba(23, 21, 18, 0.035) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(23, 21, 18, 0.035) 1px, transparent 1px),
+        var(--paper);
+      background-size: 32px 32px;
+      color: var(--ink);
+      font-family: "Avenir Next", "Noto Sans SC", "Source Han Sans SC", sans-serif;
+      line-height: 1.55;
+    }
+
+    header {
+      border-bottom: 1px solid var(--line);
+      background: rgba(247, 243, 234, 0.92);
+      backdrop-filter: blur(14px);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .topbar {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 22px 24px 18px;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 34px;
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      padding: 4px 8px;
+      border-radius: 999px;
+      color: var(--ink);
+    }
+
+    .controls {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 18px 24px 22px;
+      display: grid;
+      grid-template-columns: minmax(220px, 360px) 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    input[type="search"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 11px 12px;
+      background: var(--panel);
+      color: var(--ink);
+      font: inherit;
+      outline-color: var(--teal);
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    button.filter {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      padding: 8px 10px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button.filter.active {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: var(--ink);
+    }
+
+    button.filter span {
+      color: var(--amber);
+      margin-left: 4px;
+    }
+
+    button.filter.active span {
+      color: #ffd27a;
+    }
+
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .case {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 250, 240, 0.94);
+      box-shadow: var(--shadow);
+      border-radius: 8px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .case.hidden {
+      display: none;
+    }
+
+    .case-index {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 32px;
+      color: var(--red);
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+
+    .case-id {
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .case-suite {
+      display: inline-block;
+      margin: 10px 0;
+      color: var(--teal);
+      font-weight: 700;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag {
+      border-left: 3px solid var(--blue);
+      background: #eef3f4;
+      padding: 2px 6px;
+      font-size: 12px;
+      color: #263b42;
+    }
+
+    .prompt {
+      white-space: pre-wrap;
+      font-size: 16px;
+      margin: 0 0 14px;
+    }
+
+    .scorer {
+      display: grid;
+      grid-template-columns: minmax(120px, 180px) 1fr;
+      gap: 10px;
+      align-items: start;
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    code, pre {
+      font-family: "SF Mono", "Cascadia Code", "Menlo", monospace;
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background: #1e1c19;
+      color: #f8ead0;
+      border-radius: 8px;
+      padding: 12px;
+      max-height: 320px;
+      overflow: auto;
+    }
+
+    @media (max-width: 820px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .case {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <h1>DracoBench v0.1-hard Case Review</h1>
+      <div class="meta">
+        <span class="pill">50 cases</span>
+        <span class="pill">7 suites</span>
+        <span>DracoBench case review</span>
+      </div>
+    </div>
+    <div class="controls">
+      <input id="search" type="search" placeholder="Search id, suite, prompt, tags">
+      <div class="filters">
+        <button class="filter active" type="button" data-filter="all">all <span>50</span></button>
+        <button class="filter" type="button" data-filter="chinese_writing">chinese_writing <span>4</span></button>
+<button class="filter" type="button" data-filter="coding">coding <span>10</span></button>
+<button class="filter" type="button" data-filter="debugging">debugging <span>8</span></button>
+<button class="filter" type="button" data-filter="instruction_following">instruction_following <span>7</span></button>
+<button class="filter" type="button" data-filter="knowledge">knowledge <span>8</span></button>
+<button class="filter" type="button" data-filter="rag_long_context">rag_long_context <span>3</span></button>
+<button class="filter" type="button" data-filter="reasoning">reasoning <span>10</span></button>
+      </div>
+    </div>
+  </header>
+  <main id="cases">
+    <article class="case" data-suite="knowledge" data-search="hard-knowledge-001 knowledge exact 只回答一个英文单词：ACID 数据库事务属性中，表示并发事务彼此不应看到中间状态的是哪一项？ database acid">
+  <aside>
+    <div class="case-index">01</div>
+    <div class="case-id">hard-knowledge-001</div>
+    <div class="case-suite">knowledge</div>
+    <div class="tags"><span class="tag">database</span><span class="tag">acid</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只回答一个英文单词：ACID 数据库事务属性中，表示并发事务彼此不应看到中间状态的是哪一项？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>exact</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;answer&quot;: &quot;Isolation&quot;,
+  &quot;normalize&quot;: true
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="knowledge" data-search="hard-knowledge-002 knowledge text_rules 只回答两个中文术语：CAP 定理中，在网络分区发生时，分布式系统通常无法同时保证哪两个性质？ distributed-system cap">
+  <aside>
+    <div class="case-index">02</div>
+    <div class="case-id">hard-knowledge-002</div>
+    <div class="case-suite">knowledge</div>
+    <div class="tags"><span class="tag">distributed-system</span><span class="tag">cap</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只回答两个中文术语：CAP 定理中，在网络分区发生时，分布式系统通常无法同时保证哪两个性质？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>text_rules</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;required&quot;: [
+    &quot;一致性&quot;,
+    &quot;可用性&quot;
+  ],
+  &quot;forbidden&quot;: [
+    &quot;分区容错&quot;
+  ],
+  &quot;max_chars&quot;: 30
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="knowledge" data-search="hard-knowledge-003 knowledge contains_any 只回答中文术语：SQL 中可以在保留原始行粒度的同时，对相关行集合计算排名、累计和等结果的函数类别叫什么？ sql">
+  <aside>
+    <div class="case-index">03</div>
+    <div class="case-id">hard-knowledge-003</div>
+    <div class="case-suite">knowledge</div>
+    <div class="tags"><span class="tag">sql</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只回答中文术语：SQL 中可以在保留原始行粒度的同时，对相关行集合计算排名、累计和等结果的函数类别叫什么？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>contains_any</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;answers&quot;: [
+    &quot;窗口函数&quot;,
+    &quot;window function&quot;,
+    &quot;分析函数&quot;
+  ]
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="knowledge" data-search="hard-knowledge-004 knowledge exact 只回答三位数字：HTTP 中通常表示请求与资源当前状态冲突的状态码是什么？ http">
+  <aside>
+    <div class="case-index">04</div>
+    <div class="case-id">hard-knowledge-004</div>
+    <div class="case-suite">knowledge</div>
+    <div class="tags"><span class="tag">http</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只回答三位数字：HTTP 中通常表示请求与资源当前状态冲突的状态码是什么？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>exact</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;answer&quot;: &quot;409&quot;,
+  &quot;normalize&quot;: true
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="knowledge" data-search="hard-knowledge-005 knowledge text_rules 只用中文简短回答：Unix 权限 640 表示 owner、group、others 分别具有什么权限？ unix permissions">
+  <aside>
+    <div class="case-index">05</div>
+    <div class="case-id">hard-knowledge-005</div>
+    <div class="case-suite">knowledge</div>
+    <div class="tags"><span class="tag">unix</span><span class="tag">permissions</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只用中文简短回答：Unix 权限 640 表示 owner、group、others 分别具有什么权限？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>text_rules</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;required&quot;: [
+    &quot;owner&quot;,
+    &quot;读&quot;,
+    &quot;写&quot;,
+    &quot;group&quot;,
+    &quot;others&quot;,
+    &quot;无&quot;
+  ],
+  &quot;forbidden&quot;: [
+    &quot;执行&quot;
+  ],
+  &quot;max_chars&quot;: 80
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="knowledge" data-search="hard-knowledge-006 knowledge contains_any 只回答 Unicode 码点：换行符 LF 的 Unicode 码点是什么？ unicode">
+  <aside>
+    <div class="case-index">06</div>
+    <div class="case-id">hard-knowledge-006</div>
+    <div class="case-suite">knowledge</div>
+    <div class="tags"><span class="tag">unicode</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只回答 Unicode 码点：换行符 LF 的 Unicode 码点是什么？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>contains_any</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;answers&quot;: [
+    &quot;U+000A&quot;,
+    &quot;u+000a&quot;,
+    &quot;000A&quot;
+  ]
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="knowledge" data-search="hard-knowledge-007 knowledge contains_any 只回答英文全称：CRDT 这个缩写在分布式数据结构中通常代表什么？ distributed-system crdt">
+  <aside>
+    <div class="case-index">07</div>
+    <div class="case-id">hard-knowledge-007</div>
+    <div class="case-suite">knowledge</div>
+    <div class="tags"><span class="tag">distributed-system</span><span class="tag">crdt</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只回答英文全称：CRDT 这个缩写在分布式数据结构中通常代表什么？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>contains_any</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;answers&quot;: [
+    &quot;Conflict-free Replicated Data Type&quot;,
+    &quot;Conflict Free Replicated Data Type&quot;,
+    &quot;Conflict-free Replicated Datatype&quot;
+  ]
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="knowledge" data-search="hard-knowledge-008 knowledge contains_any 只回答英文全称：Python 解释器中常说的 GIL 是什么的缩写？ python runtime">
+  <aside>
+    <div class="case-index">08</div>
+    <div class="case-id">hard-knowledge-008</div>
+    <div class="case-suite">knowledge</div>
+    <div class="tags"><span class="tag">python</span><span class="tag">runtime</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只回答英文全称：Python 解释器中常说的 GIL 是什么的缩写？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>contains_any</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;answers&quot;: [
+    &quot;Global Interpreter Lock&quot;
+  ]
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="reasoning" data-search="hard-reasoning-001 reasoning exact 只回答三位数：一个三位数的百位比十位大 2，个位比十位小 1，三个数字之和为 16。这个数是多少？ algebra">
+  <aside>
+    <div class="case-index">09</div>
+    <div class="case-id">hard-reasoning-001</div>
+    <div class="case-suite">reasoning</div>
+    <div class="tags"><span class="tag">algebra</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只回答三位数：一个三位数的百位比十位大 2，个位比十位小 1，三个数字之和为 16。这个数是多少？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>exact</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;answer&quot;: &quot;754&quot;,
+  &quot;normalize&quot;: true
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="reasoning" data-search="hard-reasoning-002 reasoning exact 只回答最终数字：一个项目有 A、B、C、D 四个任务。A 需要 3 天，B 需要 4 天，C 需要 2 天，D 需要 5 天。B 必须在 A 后开始，D 必须在 B 和 C 都完成后开始，A 和 C 可以同时从第 1 天开始。最短总工期是多少天？ scheduling">
+  <aside>
+    <div class="case-index">10</div>
+    <div class="case-id">hard-reasoning-002</div>
+    <div class="case-suite">reasoning</div>
+    <div class="tags"><span class="tag">scheduling</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只回答最终数字：一个项目有 A、B、C、D 四个任务。A 需要 3 天，B 需要 4 天，C 需要 2 天，D 需要 5 天。B 必须在 A 后开始，D 必须在 B 和 C 都完成后开始，A 和 C 可以同时从第 1 天开始。最短总工期是多少天？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>exact</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;answer&quot;: &quot;12&quot;,
+  &quot;normalize&quot;: true
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="reasoning" data-search="hard-reasoning-003 reasoning exact 只回答最终数字：集合 A 有 40 个元素，集合 B 有 35 个元素，A∩B 有 18 个元素，全集有 70 个元素。不属于 A∪B 的元素有多少个？ set-theory">
+  <aside>
+    <div class="case-index">11</div>
+    <div class="case-id">hard-reasoning-003</div>
+    <div class="case-suite">reasoning</div>
+    <div class="tags"><span class="tag">set-theory</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只回答最终数字：集合 A 有 40 个元素，集合 B 有 35 个元素，A∩B 有 18 个元素，全集有 70 个元素。不属于 A∪B 的元素有多少个？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>exact</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;answer&quot;: &quot;13&quot;,
+  &quot;normalize&quot;: true
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="reasoning" data-search="hard-reasoning-004 reasoning contains_any 只回答最简分数：一个袋子有 3 个红球、2 个蓝球。不放回连续抽两个球，恰好一红一蓝的概率是多少？ probability">
+  <aside>
+    <div class="case-index">12</div>
+    <div class="case-id">hard-reasoning-004</div>
+    <div class="case-suite">reasoning</div>
+    <div class="tags"><span class="tag">probability</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只回答最简分数：一个袋子有 3 个红球、2 个蓝球。不放回连续抽两个球，恰好一红一蓝的概率是多少？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>contains_any</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;answers&quot;: [
+    &quot;3/5&quot;,
+    &quot;0.6&quot;
+  ]
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="reasoning" data-search="hard-reasoning-005 reasoning contains_any 只回答说谎者名字：甲说“乙说谎”，乙说“丙说谎”，丙说“甲和乙中恰好一人说真话”。已知三人中恰好两人说真话。谁说谎？ logic">
+  <aside>
+    <div class="case-index">13</div>
+    <div class="case-id">hard-reasoning-005</div>
+    <div class="case-suite">reasoning</div>
+    <div class="tags"><span class="tag">logic</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只回答说谎者名字：甲说“乙说谎”，乙说“丙说谎”，丙说“甲和乙中恰好一人说真话”。已知三人中恰好两人说真话。谁说谎？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>contains_any</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;answers&quot;: [
+    &quot;乙&quot;
+  ]
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="reasoning" data-search="hard-reasoning-006 reasoning exact 只回答最终数字：从 3x3 方格的左下角走到右上角，每次只能向右或向上走一步。如果不能经过坐标 (1,1)，共有多少条路径？ combinatorics">
+  <aside>
+    <div class="case-index">14</div>
+    <div class="case-id">hard-reasoning-006</div>
+    <div class="case-suite">reasoning</div>
+    <div class="tags"><span class="tag">combinatorics</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只回答最终数字：从 3x3 方格的左下角走到右上角，每次只能向右或向上走一步。如果不能经过坐标 (1,1)，共有多少条路径？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>exact</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;answer&quot;: &quot;8&quot;,
+  &quot;normalize&quot;: true
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="reasoning" data-search="hard-reasoning-007 reasoning contains_any 只回答角度数字：3 点 15 分时，时针和分针之间的较小夹角是多少度？ clock">
+  <aside>
+    <div class="case-index">15</div>
+    <div class="case-id">hard-reasoning-007</div>
+    <div class="case-suite">reasoning</div>
+    <div class="tags"><span class="tag">clock</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只回答角度数字：3 点 15 分时，时针和分针之间的较小夹角是多少度？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>contains_any</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;answers&quot;: [
+    &quot;7.5&quot;,
+    &quot;7.5度&quot;,
+    &quot;7.5°&quot;
+  ]
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="reasoning" data-search="hard-reasoning-008 reasoning exact 只回答最终数字：某商品先涨价 20%，再降价 20%，最终价格是 96 元。涨价前原价是多少元？ percent">
+  <aside>
+    <div class="case-index">16</div>
+    <div class="case-id">hard-reasoning-008</div>
+    <div class="case-suite">reasoning</div>
+    <div class="tags"><span class="tag">percent</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只回答最终数字：某商品先涨价 20%，再降价 20%，最终价格是 96 元。涨价前原价是多少元？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>exact</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;answer&quot;: &quot;100&quot;,
+  &quot;normalize&quot;: true
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="reasoning" data-search="hard-reasoning-009 reasoning exact 只回答最终字符串：从字符串 abca 开始，先把所有 a 替换成 ba，再删除所有 c，最后反转字符串，结果是什么？ symbolic">
+  <aside>
+    <div class="case-index">17</div>
+    <div class="case-id">hard-reasoning-009</div>
+    <div class="case-suite">reasoning</div>
+    <div class="tags"><span class="tag">symbolic</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只回答最终字符串：从字符串 abca 开始，先把所有 a 替换成 ba，再删除所有 c，最后反转字符串，结果是什么？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>exact</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;answer&quot;: &quot;abbab&quot;,
+  &quot;normalize&quot;: true
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="reasoning" data-search="hard-reasoning-010 reasoning contains_any 只回答盒子编号：三个盒子分别标着“苹果”、“橙子”、“混合”，但三个标签全都贴错了。你只能从一个盒子里拿出一个水果，就能确定所有标签。应该从哪个标签的盒子里拿？ classic-logic">
+  <aside>
+    <div class="case-index">18</div>
+    <div class="case-id">hard-reasoning-010</div>
+    <div class="case-suite">reasoning</div>
+    <div class="tags"><span class="tag">classic-logic</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只回答盒子编号：三个盒子分别标着“苹果”、“橙子”、“混合”，但三个标签全都贴错了。你只能从一个盒子里拿出一个水果，就能确定所有标签。应该从哪个标签的盒子里拿？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>contains_any</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;answers&quot;: [
+    &quot;混合&quot;
+  ]
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="coding" data-search="hard-coding-001 coding code_python_tests 只输出 Python 代码，不要解释。实现 solve(lines: list[str]) -&gt; int。lines 是 CSV 文本行，第一行是 header，后续每行形如 name,amount。忽略空行，去掉空白，返回 amount 列整数总和。 python parsing">
+  <aside>
+    <div class="case-index">19</div>
+    <div class="case-id">hard-coding-001</div>
+    <div class="case-suite">coding</div>
+    <div class="tags"><span class="tag">python</span><span class="tag">parsing</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只输出 Python 代码，不要解释。实现 solve(lines: list[str]) -&gt; int。lines 是 CSV 文本行，第一行是 header，后续每行形如 name,amount。忽略空行，去掉空白，返回 amount 列整数总和。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>code_python_tests</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;tests&quot;: [
+    &quot;assert solution.solve([&#x27;name,amount&#x27;, &#x27;a, 10&#x27;, &#x27;&#x27;, &#x27;b,-3&#x27;]) == 7&quot;,
+    &quot;assert solution.solve([&#x27;n,amount&#x27;, &#x27;x,0&#x27;, &#x27;y, 42 &#x27;]) == 42&quot;
+  ],
+  &quot;timeout_seconds&quot;: 3
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="coding" data-search="hard-coding-002 coding code_python_tests 只输出 Python 代码，不要解释。实现 solve(s: str) -&gt; str。输入是简单游程编码字符串，例如 a3b2 表示 aaabb。字母后面可以跟多位正整数。返回解码后的字符串。 python string">
+  <aside>
+    <div class="case-index">20</div>
+    <div class="case-id">hard-coding-002</div>
+    <div class="case-suite">coding</div>
+    <div class="tags"><span class="tag">python</span><span class="tag">string</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只输出 Python 代码，不要解释。实现 solve(s: str) -&gt; str。输入是简单游程编码字符串，例如 a3b2 表示 aaabb。字母后面可以跟多位正整数。返回解码后的字符串。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>code_python_tests</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;tests&quot;: [
+    &quot;assert solution.solve(&#x27;a3b2&#x27;) == &#x27;aaabb&#x27;&quot;,
+    &quot;assert solution.solve(&#x27;x12y1&#x27;) == &#x27;xxxxxxxxxxxxy&#x27;&quot;,
+    &quot;assert solution.solve(&#x27;z1&#x27;) == &#x27;z&#x27;&quot;
+  ],
+  &quot;timeout_seconds&quot;: 3
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="coding" data-search="hard-coding-003 coding code_python_tests 只输出 Python 代码，不要解释。实现 solve(nums: list[int], k: int) -&gt; list[int]。返回出现频率最高的 k 个数字；频率相同按数字升序。 python sorting">
+  <aside>
+    <div class="case-index">21</div>
+    <div class="case-id">hard-coding-003</div>
+    <div class="case-suite">coding</div>
+    <div class="tags"><span class="tag">python</span><span class="tag">sorting</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只输出 Python 代码，不要解释。实现 solve(nums: list[int], k: int) -&gt; list[int]。返回出现频率最高的 k 个数字；频率相同按数字升序。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>code_python_tests</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;tests&quot;: [
+    &quot;assert solution.solve([1,1,2,2,2,3], 2) == [2,1]&quot;,
+    &quot;assert solution.solve([4,4,5,5,6], 3) == [4,5,6]&quot;,
+    &quot;assert solution.solve([-1,-1,2,2,2], 1) == [2]&quot;
+  ],
+  &quot;timeout_seconds&quot;: 3
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="coding" data-search="hard-coding-004 coding code_python_tests 只输出 Python 代码，不要解释。实现 solve(intervals: list[list[int]]) -&gt; list[list[int]]。合并闭区间，输入可无序，输出按起点升序。相邻但不重叠的区间不要合并，例如 [1,2] 和 [3,4] 分开。 python intervals">
+  <aside>
+    <div class="case-index">22</div>
+    <div class="case-id">hard-coding-004</div>
+    <div class="case-suite">coding</div>
+    <div class="tags"><span class="tag">python</span><span class="tag">intervals</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只输出 Python 代码，不要解释。实现 solve(intervals: list[list[int]]) -&gt; list[list[int]]。合并闭区间，输入可无序，输出按起点升序。相邻但不重叠的区间不要合并，例如 [1,2] 和 [3,4] 分开。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>code_python_tests</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;tests&quot;: [
+    &quot;assert solution.solve([[5,7],[1,3],[2,4]]) == [[1,4],[5,7]]&quot;,
+    &quot;assert solution.solve([[1,2],[3,4]]) == [[1,2],[3,4]]&quot;,
+    &quot;assert solution.solve([]) == []&quot;
+  ],
+  &quot;timeout_seconds&quot;: 3
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="coding" data-search="hard-coding-005 coding code_python_tests 只输出 Python 代码，不要解释。实现 solve(tokens: list[str]) -&gt; int，计算逆波兰表达式。操作符包括 +、-、*、/，除法向零截断。 python stack">
+  <aside>
+    <div class="case-index">23</div>
+    <div class="case-id">hard-coding-005</div>
+    <div class="case-suite">coding</div>
+    <div class="tags"><span class="tag">python</span><span class="tag">stack</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只输出 Python 代码，不要解释。实现 solve(tokens: list[str]) -&gt; int，计算逆波兰表达式。操作符包括 +、-、*、/，除法向零截断。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>code_python_tests</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;tests&quot;: [
+    &quot;assert solution.solve([&#x27;2&#x27;,&#x27;1&#x27;,&#x27;+&#x27;,&#x27;3&#x27;,&#x27;*&#x27;]) == 9&quot;,
+    &quot;assert solution.solve([&#x27;4&#x27;,&#x27;13&#x27;,&#x27;5&#x27;,&#x27;/&#x27;,&#x27;+&#x27;]) == 6&quot;,
+    &quot;assert solution.solve([&#x27;10&#x27;,&#x27;6&#x27;,&#x27;9&#x27;,&#x27;3&#x27;,&#x27;+&#x27;,&#x27;-11&#x27;,&#x27;*&#x27;,&#x27;/&#x27;,&#x27;*&#x27;,&#x27;17&#x27;,&#x27;+&#x27;,&#x27;5&#x27;,&#x27;+&#x27;]) == 22&quot;
+  ],
+  &quot;timeout_seconds&quot;: 3
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="coding" data-search="hard-coding-006 coding code_python_tests 只输出 Python 代码，不要解释。实现 solve(path: str) -&gt; str，规范化 Unix 风格路径。处理 .、..、重复斜杠；返回以 / 开头的绝对路径。 python path">
+  <aside>
+    <div class="case-index">24</div>
+    <div class="case-id">hard-coding-006</div>
+    <div class="case-suite">coding</div>
+    <div class="tags"><span class="tag">python</span><span class="tag">path</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只输出 Python 代码，不要解释。实现 solve(path: str) -&gt; str，规范化 Unix 风格路径。处理 .、..、重复斜杠；返回以 / 开头的绝对路径。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>code_python_tests</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;tests&quot;: [
+    &quot;assert solution.solve(&#x27;/a//b/./c/../&#x27;) == &#x27;/a/b&#x27;&quot;,
+    &quot;assert solution.solve(&#x27;/../x&#x27;) == &#x27;/x&#x27;&quot;,
+    &quot;assert solution.solve(&#x27;/home/user/../../tmp&#x27;) == &#x27;/tmp&#x27;&quot;
+  ],
+  &quot;timeout_seconds&quot;: 3
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="coding" data-search="hard-coding-007 coding code_python_tests 只输出 Python 代码，不要解释。实现 solve(s: str) -&gt; int，把罗马数字转换为整数。输入合法，包含 I,V,X,L,C,D,M。 python roman">
+  <aside>
+    <div class="case-index">25</div>
+    <div class="case-id">hard-coding-007</div>
+    <div class="case-suite">coding</div>
+    <div class="tags"><span class="tag">python</span><span class="tag">roman</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只输出 Python 代码，不要解释。实现 solve(s: str) -&gt; int，把罗马数字转换为整数。输入合法，包含 I,V,X,L,C,D,M。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>code_python_tests</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;tests&quot;: [
+    &quot;assert solution.solve(&#x27;III&#x27;) == 3&quot;,
+    &quot;assert solution.solve(&#x27;MCMXCIV&#x27;) == 1994&quot;,
+    &quot;assert solution.solve(&#x27;XLII&#x27;) == 42&quot;
+  ],
+  &quot;timeout_seconds&quot;: 3
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="coding" data-search="hard-coding-008 coding code_python_tests 只输出 Python 代码，不要解释。实现 solve(records: list[dict]) -&gt; list[dict]。按 id 去重，保留每个 id 第一次出现的记录，并保持原始顺序。 python data">
+  <aside>
+    <div class="case-index">26</div>
+    <div class="case-id">hard-coding-008</div>
+    <div class="case-suite">coding</div>
+    <div class="tags"><span class="tag">python</span><span class="tag">data</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只输出 Python 代码，不要解释。实现 solve(records: list[dict]) -&gt; list[dict]。按 id 去重，保留每个 id 第一次出现的记录，并保持原始顺序。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>code_python_tests</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;tests&quot;: [
+    &quot;data = [{&#x27;id&#x27;: 2, &#x27;v&#x27;: &#x27;a&#x27;}, {&#x27;id&#x27;: 1, &#x27;v&#x27;: &#x27;b&#x27;}, {&#x27;id&#x27;: 2, &#x27;v&#x27;: &#x27;c&#x27;}]\nassert solution.solve(data) == [{&#x27;id&#x27;: 2, &#x27;v&#x27;: &#x27;a&#x27;}, {&#x27;id&#x27;: 1, &#x27;v&#x27;: &#x27;b&#x27;}]&quot;,
+    &quot;assert solution.solve([]) == []&quot;
+  ],
+  &quot;timeout_seconds&quot;: 3
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="coding" data-search="hard-coding-009 coding code_python_tests 只输出 Python 代码，不要解释。实现 solve(s: str) -&gt; int，返回最长有效括号子串长度。字符串只包含 ( 和 )。 python stack">
+  <aside>
+    <div class="case-index">27</div>
+    <div class="case-id">hard-coding-009</div>
+    <div class="case-suite">coding</div>
+    <div class="tags"><span class="tag">python</span><span class="tag">stack</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只输出 Python 代码，不要解释。实现 solve(s: str) -&gt; int，返回最长有效括号子串长度。字符串只包含 ( 和 )。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>code_python_tests</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;tests&quot;: [
+    &quot;assert solution.solve(&#x27;(()&#x27;) == 2&quot;,
+    &quot;assert solution.solve(&#x27;)()())&#x27;) == 4&quot;,
+    &quot;assert solution.solve(&#x27;()(())&#x27;) == 6&quot;
+  ],
+  &quot;timeout_seconds&quot;: 3
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="coding" data-search="hard-coding-010 coding code_python_tests 只输出 Python 代码，不要解释。实现 solve(s: str) -&gt; dict[str, str]。输入由分号分隔的 key=value 片段组成，忽略空片段，key 和 value 两侧空白要去掉，后出现的同名 key 覆盖前者。 python parsing">
+  <aside>
+    <div class="case-index">28</div>
+    <div class="case-id">hard-coding-010</div>
+    <div class="case-suite">coding</div>
+    <div class="tags"><span class="tag">python</span><span class="tag">parsing</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只输出 Python 代码，不要解释。实现 solve(s: str) -&gt; dict[str, str]。输入由分号分隔的 key=value 片段组成，忽略空片段，key 和 value 两侧空白要去掉，后出现的同名 key 覆盖前者。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>code_python_tests</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;tests&quot;: [
+    &quot;assert solution.solve(&#x27;a=1; b = two ;a=3;;&#x27;) == {&#x27;a&#x27;: &#x27;3&#x27;, &#x27;b&#x27;: &#x27;two&#x27;}&quot;,
+    &quot;assert solution.solve(&#x27;&#x27;) == {}&quot;,
+    &quot;assert solution.solve(&#x27;x= hello world &#x27;) == {&#x27;x&#x27;: &#x27;hello world&#x27;}&quot;
+  ],
+  &quot;timeout_seconds&quot;: 3
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="debugging" data-search="hard-debugging-001 debugging regex 下面代码多次调用会共享同一个列表。请指出根因，并给出最小修复。最后单独一行写 FIX: &lt;修复后的函数定义行&gt;。
+
+```python
+def add_item(x, items=[]):
+    items.append(x)
+    return items
+``` python mutable-default">
+  <aside>
+    <div class="case-index">29</div>
+    <div class="case-id">hard-debugging-001</div>
+    <div class="case-suite">debugging</div>
+    <div class="tags"><span class="tag">python</span><span class="tag">mutable-default</span></div>
+  </aside>
+  <section>
+    <p class="prompt">下面代码多次调用会共享同一个列表。请指出根因，并给出最小修复。最后单独一行写 FIX: &lt;修复后的函数定义行&gt;。
+
+```python
+def add_item(x, items=[]):
+    items.append(x)
+    return items
+```</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>regex</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;pattern&quot;: &quot;FIX:\\s*`?\\s*def\\s+add_item\\(x,\\s*items=None\\)\\s*:&quot;,
+  &quot;flags&quot;: &quot;is&quot;
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="debugging" data-search="hard-debugging-002 debugging regex 下面代码期望返回 0、1、2 三个函数，但实际都返回 2。请指出根因，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 append 行&gt;。
+
+```python
+funcs = []
+for i in range(3):
+    funcs.append(lambda: i)
+``` python closure">
+  <aside>
+    <div class="case-index">30</div>
+    <div class="case-id">hard-debugging-002</div>
+    <div class="case-suite">debugging</div>
+    <div class="tags"><span class="tag">python</span><span class="tag">closure</span></div>
+  </aside>
+  <section>
+    <p class="prompt">下面代码期望返回 0、1、2 三个函数，但实际都返回 2。请指出根因，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 append 行&gt;。
+
+```python
+funcs = []
+for i in range(3):
+    funcs.append(lambda: i)
+```</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>regex</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;pattern&quot;: &quot;FIX:\\s*`?\\s*funcs\\.append\\(lambda\\s+i=i\\s*:\\s*i\\)\\s*`?&quot;,
+  &quot;flags&quot;: &quot;is&quot;
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="debugging" data-search="hard-debugging-003 debugging regex 下面二分查找找不到最后一个元素。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 while 行&gt;。
+
+```python
+def search(nums, target):
+    lo, hi = 0, len(nums) - 1
+    while lo &lt; hi:
+        mid = (lo + hi) // 2
+        if nums[mid] == target:
+            return mid
+        if nums[mid] &lt; target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return -1
+``` python binary-search">
+  <aside>
+    <div class="case-index">31</div>
+    <div class="case-id">hard-debugging-003</div>
+    <div class="case-suite">debugging</div>
+    <div class="tags"><span class="tag">python</span><span class="tag">binary-search</span></div>
+  </aside>
+  <section>
+    <p class="prompt">下面二分查找找不到最后一个元素。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 while 行&gt;。
+
+```python
+def search(nums, target):
+    lo, hi = 0, len(nums) - 1
+    while lo &lt; hi:
+        mid = (lo + hi) // 2
+        if nums[mid] == target:
+            return mid
+        if nums[mid] &lt; target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return -1
+```</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>regex</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;pattern&quot;: &quot;FIX:\\s*`?\\s*while\\s+lo\\s*&lt;=\\s*hi\\s*:&quot;,
+  &quot;flags&quot;: &quot;is&quot;
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="debugging" data-search="hard-debugging-004 debugging regex 下面代码修改 matrix[0][0] 后，其他行也被修改。请指出根因，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 matrix 初始化语句&gt;。
+
+```python
+matrix = [[0] * 3] * 3
+matrix[0][0] = 1
+``` python aliasing">
+  <aside>
+    <div class="case-index">32</div>
+    <div class="case-id">hard-debugging-004</div>
+    <div class="case-suite">debugging</div>
+    <div class="tags"><span class="tag">python</span><span class="tag">aliasing</span></div>
+  </aside>
+  <section>
+    <p class="prompt">下面代码修改 matrix[0][0] 后，其他行也被修改。请指出根因，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 matrix 初始化语句&gt;。
+
+```python
+matrix = [[0] * 3] * 3
+matrix[0][0] = 1
+```</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>regex</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;pattern&quot;: &quot;FIX:\\s*`?\\s*matrix\\s*=\\s*\\[\\[0\\]\\s*\\*\\s*3\\s+for\\s+_\\s+in\\s+range\\(3\\)\\]\\s*`?&quot;,
+  &quot;flags&quot;: &quot;is&quot;
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="debugging" data-search="hard-debugging-005 debugging regex 下面递归函数对 n&gt;1 会返回 None。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的递归行&gt;。
+
+```python
+def fact(n):
+    if n &lt;= 1:
+        return 1
+    n * fact(n - 1)
+``` python recursion">
+  <aside>
+    <div class="case-index">33</div>
+    <div class="case-id">hard-debugging-005</div>
+    <div class="case-suite">debugging</div>
+    <div class="tags"><span class="tag">python</span><span class="tag">recursion</span></div>
+  </aside>
+  <section>
+    <p class="prompt">下面递归函数对 n&gt;1 会返回 None。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的递归行&gt;。
+
+```python
+def fact(n):
+    if n &lt;= 1:
+        return 1
+    n * fact(n - 1)
+```</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>regex</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;pattern&quot;: &quot;FIX:\\s*`?\\s*return\\s+n\\s*\\*\\s*fact\\(n\\s*-\\s*1\\)\\s*`?&quot;,
+  &quot;flags&quot;: &quot;is&quot;
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="debugging" data-search="hard-debugging-006 debugging regex 下面函数期望返回排序后的新列表，但实际返回 None。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 return 行&gt;。
+
+```python
+def ordered(items):
+    return items.sort()
+``` python mutation">
+  <aside>
+    <div class="case-index">34</div>
+    <div class="case-id">hard-debugging-006</div>
+    <div class="case-suite">debugging</div>
+    <div class="tags"><span class="tag">python</span><span class="tag">mutation</span></div>
+  </aside>
+  <section>
+    <p class="prompt">下面函数期望返回排序后的新列表，但实际返回 None。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 return 行&gt;。
+
+```python
+def ordered(items):
+    return items.sort()
+```</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>regex</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;pattern&quot;: &quot;FIX:\\s*`?\\s*return\\s+sorted\\(items\\)\\s*`?&quot;,
+  &quot;flags&quot;: &quot;is&quot;
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="debugging" data-search="hard-debugging-007 debugging regex 下面代码期望捕获除零异常，但异常没有被捕获。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 except 行&gt;。
+
+```python
+try:
+    x = 1 / 0
+except ValueError:
+    x = None
+``` python exception">
+  <aside>
+    <div class="case-index">35</div>
+    <div class="case-id">hard-debugging-007</div>
+    <div class="case-suite">debugging</div>
+    <div class="tags"><span class="tag">python</span><span class="tag">exception</span></div>
+  </aside>
+  <section>
+    <p class="prompt">下面代码期望捕获除零异常，但异常没有被捕获。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的 except 行&gt;。
+
+```python
+try:
+    x = 1 / 0
+except ValueError:
+    x = None
+```</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>regex</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;pattern&quot;: &quot;FIX:\\s*`?\\s*except\\s+ZeroDivisionError\\s*:&quot;,
+  &quot;flags&quot;: &quot;is&quot;
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="debugging" data-search="hard-debugging-008 debugging regex 下面正则期望匹配完整邮箱，但会把 abc@x 也当成匹配。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的正则字符串&gt;。
+
+```python
+pattern = r&quot;\w+@\w+&quot;
+``` python regex">
+  <aside>
+    <div class="case-index">36</div>
+    <div class="case-id">hard-debugging-008</div>
+    <div class="case-suite">debugging</div>
+    <div class="tags"><span class="tag">python</span><span class="tag">regex</span></div>
+  </aside>
+  <section>
+    <p class="prompt">下面正则期望匹配完整邮箱，但会把 abc@x 也当成匹配。请指出 bug，并给出最小修复。最后单独一行写 FIX: &lt;修复后的正则字符串&gt;。
+
+```python
+pattern = r&quot;\w+@\w+&quot;
+```</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>regex</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;pattern&quot;: &quot;FIX:\\s*`?\\s*r?[\&quot;&#x27;]\\^\\\\w\\+@\\\\w\\+\\\\.\\\\w\\+\\$[\&quot;&#x27;]\\s*`?&quot;,
+  &quot;flags&quot;: &quot;is&quot;
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="instruction_following" data-search="hard-if-001 instruction_following json_schema_lite 只返回 JSON，不要 Markdown。返回一个数组，正好 3 个对象。每个对象必须包含 id 和 verdict；id 依次为 1、2、3；verdict 只能是 keep 或 drop。 json schema">
+  <aside>
+    <div class="case-index">37</div>
+    <div class="case-id">hard-if-001</div>
+    <div class="case-suite">instruction_following</div>
+    <div class="tags"><span class="tag">json</span><span class="tag">schema</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只返回 JSON，不要 Markdown。返回一个数组，正好 3 个对象。每个对象必须包含 id 和 verdict；id 依次为 1、2、3；verdict 只能是 keep 或 drop。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>json_schema_lite</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;schema&quot;: {
+    &quot;type&quot;: &quot;array&quot;,
+    &quot;minItems&quot;: 3,
+    &quot;maxItems&quot;: 3,
+    &quot;items&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;required&quot;: [
+        &quot;id&quot;,
+        &quot;verdict&quot;
+      ],
+      &quot;additionalProperties&quot;: false,
+      &quot;properties&quot;: {
+        &quot;id&quot;: {
+          &quot;type&quot;: &quot;integer&quot;
+        },
+        &quot;verdict&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;enum&quot;: [
+            &quot;keep&quot;,
+            &quot;drop&quot;
+          ]
+        }
+      }
+    }
+  }
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="instruction_following" data-search="hard-if-002 instruction_following text_rules 输出两行中文。第一行必须以“结论：”开头，第二行必须以“理由：”开头。不要使用项目符号，不要超过 80 个汉字。主题：是否应该只看 benchmark 总分选模型。 format zh">
+  <aside>
+    <div class="case-index">38</div>
+    <div class="case-id">hard-if-002</div>
+    <div class="case-suite">instruction_following</div>
+    <div class="tags"><span class="tag">format</span><span class="tag">zh</span></div>
+  </aside>
+  <section>
+    <p class="prompt">输出两行中文。第一行必须以“结论：”开头，第二行必须以“理由：”开头。不要使用项目符号，不要超过 80 个汉字。主题：是否应该只看 benchmark 总分选模型。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>text_rules</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;required&quot;: [
+    &quot;结论：&quot;,
+    &quot;理由：&quot;
+  ],
+  &quot;forbidden&quot;: [
+    &quot;-&quot;,
+    &quot;*&quot;,
+    &quot;1.&quot;
+  ],
+  &quot;max_chars&quot;: 90
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="instruction_following" data-search="hard-if-003 instruction_following json_schema_lite 只输出一个 JSON 对象，不要解释。字段 task 必须是 &quot;benchmark-review&quot;，字段 risk 必须是 low、medium、high 之一，字段 notes 必须是字符串数组。 json enum">
+  <aside>
+    <div class="case-index">39</div>
+    <div class="case-id">hard-if-003</div>
+    <div class="case-suite">instruction_following</div>
+    <div class="tags"><span class="tag">json</span><span class="tag">enum</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只输出一个 JSON 对象，不要解释。字段 task 必须是 &quot;benchmark-review&quot;，字段 risk 必须是 low、medium、high 之一，字段 notes 必须是字符串数组。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>json_schema_lite</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;schema&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;required&quot;: [
+      &quot;task&quot;,
+      &quot;risk&quot;,
+      &quot;notes&quot;
+    ],
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;task&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;const&quot;: &quot;benchmark-review&quot;
+      },
+      &quot;risk&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;enum&quot;: [
+          &quot;low&quot;,
+          &quot;medium&quot;,
+          &quot;high&quot;
+        ]
+      },
+      &quot;notes&quot;: {
+        &quot;type&quot;: &quot;array&quot;,
+        &quot;items&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        }
+      }
+    }
+  }
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="instruction_following" data-search="hard-if-004 instruction_following exact 把短语“模型评测需要可复现”转换成 kebab-case。不要翻译，保留中文词语，只输出转换结果，不要解释。 transform format">
+  <aside>
+    <div class="case-index">40</div>
+    <div class="case-id">hard-if-004</div>
+    <div class="case-suite">instruction_following</div>
+    <div class="tags"><span class="tag">transform</span><span class="tag">format</span></div>
+  </aside>
+  <section>
+    <p class="prompt">把短语“模型评测需要可复现”转换成 kebab-case。不要翻译，保留中文词语，只输出转换结果，不要解释。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>exact</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;answer&quot;: &quot;模型-评测-需要-可复现&quot;,
+  &quot;normalize&quot;: true
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="instruction_following" data-search="hard-if-005 instruction_following regex 只输出 CSV，共 3 行。第一行必须是 name,score；后两行分别是 alpha,10 和 beta,8。不要代码块。 csv format">
+  <aside>
+    <div class="case-index">41</div>
+    <div class="case-id">hard-if-005</div>
+    <div class="case-suite">instruction_following</div>
+    <div class="tags"><span class="tag">csv</span><span class="tag">format</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只输出 CSV，共 3 行。第一行必须是 name,score；后两行分别是 alpha,10 和 beta,8。不要代码块。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>regex</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;pattern&quot;: &quot;^\\s*name,score\\s*\\n\\s*alpha,10\\s*\\n\\s*beta,8\\s*$&quot;,
+  &quot;flags&quot;: &quot;is&quot;
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="instruction_following" data-search="hard-if-006 instruction_following text_rules 请回答一个不超过 30 个汉字的句子。必须包含“拒答”，且不能包含“抱歉”和“无法”。 constraint">
+  <aside>
+    <div class="case-index">42</div>
+    <div class="case-id">hard-if-006</div>
+    <div class="case-suite">instruction_following</div>
+    <div class="tags"><span class="tag">constraint</span></div>
+  </aside>
+  <section>
+    <p class="prompt">请回答一个不超过 30 个汉字的句子。必须包含“拒答”，且不能包含“抱歉”和“无法”。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>text_rules</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;required&quot;: [
+    &quot;拒答&quot;
+  ],
+  &quot;forbidden&quot;: [
+    &quot;抱歉&quot;,
+    &quot;无法&quot;
+  ],
+  &quot;max_chars&quot;: 30
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="instruction_following" data-search="hard-if-007 instruction_following json_schema_lite 只返回 JSON 对象。字段 ok 必须为 true；字段 count 必须为 5；字段 label 必须匹配大写字母加两位数字，例如 A07。 json pattern">
+  <aside>
+    <div class="case-index">43</div>
+    <div class="case-id">hard-if-007</div>
+    <div class="case-suite">instruction_following</div>
+    <div class="tags"><span class="tag">json</span><span class="tag">pattern</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只返回 JSON 对象。字段 ok 必须为 true；字段 count 必须为 5；字段 label 必须匹配大写字母加两位数字，例如 A07。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>json_schema_lite</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;schema&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;required&quot;: [
+      &quot;ok&quot;,
+      &quot;count&quot;,
+      &quot;label&quot;
+    ],
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;ok&quot;: {
+        &quot;type&quot;: &quot;boolean&quot;,
+        &quot;const&quot;: true
+      },
+      &quot;count&quot;: {
+        &quot;type&quot;: &quot;integer&quot;,
+        &quot;const&quot;: 5
+      },
+      &quot;label&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;pattern&quot;: &quot;^[A-Z][0-9]{2}$&quot;
+      }
+    }
+  }
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="chinese_writing" data-search="hard-zh-writing-001 chinese_writing text_rules 给公众号文章写 3 个标题，每行一个。主题是个人模型评测。每个标题都必须包含“模型评测”，不能出现“最强”。 wechat title">
+  <aside>
+    <div class="case-index">44</div>
+    <div class="case-id">hard-zh-writing-001</div>
+    <div class="case-suite">chinese_writing</div>
+    <div class="tags"><span class="tag">wechat</span><span class="tag">title</span></div>
+  </aside>
+  <section>
+    <p class="prompt">给公众号文章写 3 个标题，每行一个。主题是个人模型评测。每个标题都必须包含“模型评测”，不能出现“最强”。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>text_rules</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;required&quot;: [
+    &quot;模型评测&quot;
+  ],
+  &quot;forbidden&quot;: [
+    &quot;最强&quot;
+  ],
+  &quot;max_chars&quot;: 120
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="chinese_writing" data-search="hard-zh-writing-002 chinese_writing text_rules 用不超过 150 个汉字解释：为什么 benchmark 需要同时看样本、标尺和误差。必须包含“样本”“标尺”“误差”。 explanation zh">
+  <aside>
+    <div class="case-index">45</div>
+    <div class="case-id">hard-zh-writing-002</div>
+    <div class="case-suite">chinese_writing</div>
+    <div class="tags"><span class="tag">explanation</span><span class="tag">zh</span></div>
+  </aside>
+  <section>
+    <p class="prompt">用不超过 150 个汉字解释：为什么 benchmark 需要同时看样本、标尺和误差。必须包含“样本”“标尺”“误差”。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>text_rules</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;required&quot;: [
+    &quot;样本&quot;,
+    &quot;标尺&quot;,
+    &quot;误差&quot;
+  ],
+  &quot;forbidden&quot;: [
+    &quot;玄学&quot;
+  ],
+  &quot;max_chars&quot;: 150
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="chinese_writing" data-search="hard-zh-writing-003 chinese_writing text_rules 写一段不超过 100 个汉字的评测结论。必须表达“满分不代表强”，并包含“区分度”。不能出现“吊打”。 conclusion zh">
+  <aside>
+    <div class="case-index">46</div>
+    <div class="case-id">hard-zh-writing-003</div>
+    <div class="case-suite">chinese_writing</div>
+    <div class="tags"><span class="tag">conclusion</span><span class="tag">zh</span></div>
+  </aside>
+  <section>
+    <p class="prompt">写一段不超过 100 个汉字的评测结论。必须表达“满分不代表强”，并包含“区分度”。不能出现“吊打”。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>text_rules</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;required&quot;: [
+    &quot;满分&quot;,
+    &quot;不代表&quot;,
+    &quot;区分度&quot;
+  ],
+  &quot;forbidden&quot;: [
+    &quot;吊打&quot;
+  ],
+  &quot;max_chars&quot;: 100
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="chinese_writing" data-search="hard-zh-writing-004 chinese_writing text_rules 把这句话改写得更专业：这个模型挺牛的，跑分很高。要求不超过 60 个汉字，必须包含“表现稳定”，不能包含“牛”。 rewrite zh">
+  <aside>
+    <div class="case-index">47</div>
+    <div class="case-id">hard-zh-writing-004</div>
+    <div class="case-suite">chinese_writing</div>
+    <div class="tags"><span class="tag">rewrite</span><span class="tag">zh</span></div>
+  </aside>
+  <section>
+    <p class="prompt">把这句话改写得更专业：这个模型挺牛的，跑分很高。要求不超过 60 个汉字，必须包含“表现稳定”，不能包含“牛”。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>text_rules</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;required&quot;: [
+    &quot;表现稳定&quot;
+  ],
+  &quot;forbidden&quot;: [
+    &quot;牛&quot;
+  ],
+  &quot;max_chars&quot;: 60
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="rag_long_context" data-search="hard-rag-001 rag_long_context text_rules 只根据资料回答，不要自行补充。
+
+资料：DracoBench 的 hard 集合用于拉开强模型之间的差距。它不替代 smoke 集合；smoke 集合用于验证链路是否健康。hard 集合会包含更复杂的推理、代码、调试、格式遵循和中文表达任务。
+
+问题：hard 集合和 smoke 集合的分工分别是什么？ rag grounded">
+  <aside>
+    <div class="case-index">48</div>
+    <div class="case-id">hard-rag-001</div>
+    <div class="case-suite">rag_long_context</div>
+    <div class="tags"><span class="tag">rag</span><span class="tag">grounded</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只根据资料回答，不要自行补充。
+
+资料：DracoBench 的 hard 集合用于拉开强模型之间的差距。它不替代 smoke 集合；smoke 集合用于验证链路是否健康。hard 集合会包含更复杂的推理、代码、调试、格式遵循和中文表达任务。
+
+问题：hard 集合和 smoke 集合的分工分别是什么？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>text_rules</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;required&quot;: [
+    &quot;拉开&quot;,
+    &quot;强模型&quot;,
+    &quot;链路&quot;,
+    &quot;健康&quot;
+  ],
+  &quot;forbidden&quot;: [
+    &quot;公开排行榜&quot;,
+    &quot;生产环境&quot;
+  ],
+  &quot;max_chars&quot;: 180
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="rag_long_context" data-search="hard-rag-002 rag_long_context text_rules 只根据资料回答，不要自行补充。
+
+资料：某次评测中，模型 A 的正确率是 92%，平均延迟 14 秒，成本 0.08 美元；模型 B 的正确率是 88%，平均延迟 4 秒，成本 0.02 美元。文章结论不能只看正确率，还要说明使用场景差异。
+
+问题：如果是低成本批量摘要任务，资料更支持选择哪个模型？给出一句理由。 rag tradeoff">
+  <aside>
+    <div class="case-index">49</div>
+    <div class="case-id">hard-rag-002</div>
+    <div class="case-suite">rag_long_context</div>
+    <div class="tags"><span class="tag">rag</span><span class="tag">tradeoff</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只根据资料回答，不要自行补充。
+
+资料：某次评测中，模型 A 的正确率是 92%，平均延迟 14 秒，成本 0.08 美元；模型 B 的正确率是 88%，平均延迟 4 秒，成本 0.02 美元。文章结论不能只看正确率，还要说明使用场景差异。
+
+问题：如果是低成本批量摘要任务，资料更支持选择哪个模型？给出一句理由。</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>text_rules</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;required&quot;: [
+    &quot;模型 B&quot;,
+    &quot;成本&quot;,
+    &quot;延迟&quot;
+  ],
+  &quot;forbidden&quot;: [
+    &quot;模型 A 更适合&quot;,
+    &quot;准确率最高&quot;
+  ],
+  &quot;max_chars&quot;: 120
+}</pre>
+    </div>
+  </section>
+</article>
+<article class="case" data-suite="rag_long_context" data-search="hard-rag-003 rag_long_context text_rules 只根据资料回答，不要自行补充。
+
+资料：评测记录显示，模型 X 在 JSON 格式题上 20 题通过 20 题，在代码题上 10 题通过 6 题，在中文写作题上人工评价较高。资料没有提到模型 X 的多模态能力。
+
+问题：模型 X 的多模态能力如何？ rag abstain">
+  <aside>
+    <div class="case-index">50</div>
+    <div class="case-id">hard-rag-003</div>
+    <div class="case-suite">rag_long_context</div>
+    <div class="tags"><span class="tag">rag</span><span class="tag">abstain</span></div>
+  </aside>
+  <section>
+    <p class="prompt">只根据资料回答，不要自行补充。
+
+资料：评测记录显示，模型 X 在 JSON 格式题上 20 题通过 20 题，在代码题上 10 题通过 6 题，在中文写作题上人工评价较高。资料没有提到模型 X 的多模态能力。
+
+问题：模型 X 的多模态能力如何？</p>
+    <div class="scorer">
+      <div class="label">Scorer</div>
+      <code>text_rules</code>
+      <div class="label">Expected</div>
+      <pre>{
+  &quot;required&quot;: [
+    &quot;没有提到&quot;
+  ],
+  &quot;forbidden&quot;: [
+    &quot;很强&quot;,
+    &quot;很弱&quot;,
+    &quot;图片&quot;,
+    &quot;视频&quot;
+  ],
+  &quot;max_chars&quot;: 80
+}</pre>
+    </div>
+  </section>
+</article>
+  </main>
+  <script>
+    const search = document.querySelector('#search');
+    const filters = [...document.querySelectorAll('.filter')];
+    const cases = [...document.querySelectorAll('.case')];
+    let activeSuite = 'all';
+
+    function applyFilters() {
+      const query = search.value.trim().toLowerCase();
+      for (const item of cases) {
+        const suiteOk = activeSuite === 'all' || item.dataset.suite === activeSuite;
+        const textOk = !query || item.textContent.toLowerCase().includes(query);
+        item.classList.toggle('hidden', !(suiteOk && textOk));
+      }
+    }
+
+    search.addEventListener('input', applyFilters);
+    filters.forEach((button) => {
+      button.addEventListener('click', () => {
+        filters.forEach((item) => item.classList.remove('active'));
+        button.classList.add('active');
+        activeSuite = button.dataset.filter;
+        applyFilters();
+      });
+    });
+  </script>
+</body>
+</html>

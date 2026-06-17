@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dracobench"
+version = "0.1.0"
+description = "Personal LLM benchmark toolkit for model selection and article-ready analysis."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "dracohu" }]
+dependencies = []
+
+[project.scripts]
+dracobench = "dracobench.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+

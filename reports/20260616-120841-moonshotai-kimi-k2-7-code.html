@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>DracoBench v0.1-hard: moonshotai/kimi-k2.7-code</title>
+  <style>
+    :root {
+      --paper: #f6f1e7;
+      --ink: #151310;
+      --muted: #6b6254;
+      --line: #d7ccb9;
+      --panel: #fffaf0;
+      --pass: #0b7a5f;
+      --fail: #b23a48;
+      --blue: #245c9a;
+      --gold: #9b6900;
+      --shadow: 0 14px 38px rgba(30, 22, 12, 0.10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(90deg, rgba(21, 19, 16, 0.035) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(21, 19, 16, 0.035) 1px, transparent 1px),
+        var(--paper);
+      background-size: 28px 28px;
+      color: var(--ink);
+      font-family: "Avenir Next", "Noto Sans SC", "Source Han Sans SC", sans-serif;
+      line-height: 1.5;
+    }
+
+    header {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 30px 24px 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 38px;
+      line-height: 1.06;
+      letter-spacing: 0;
+    }
+
+    .model {
+      margin-top: 10px;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+
+    .summary {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 12px 24px 24px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 250, 240, 0.94);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      min-height: 96px;
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .metric .value {
+      margin-top: 8px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 30px;
+      line-height: 1;
+    }
+
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px 32px;
+    }
+
+    section {
+      margin-top: 20px;
+    }
+
+    h2 {
+      font-size: 18px;
+      margin: 0 0 10px;
+      letter-spacing: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      background: #efe5d5;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .status-pass {
+      color: var(--pass);
+      font-weight: 700;
+    }
+
+    .status-fail {
+      color: var(--fail);
+      font-weight: 700;
+    }
+
+    .failures {
+      display: grid;
+      gap: 12px;
+    }
+
+    .failure {
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--fail);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .failure h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    pre {
+      margin: 8px 0 0;
+      max-height: 260px;
+      overflow: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      border-radius: 8px;
+      background: #1d1a16;
+      color: #f8ead0;
+      padding: 10px;
+    }
+
+    code, pre {
+      font-family: "SF Mono", "Cascadia Code", "Menlo", monospace;
+      font-size: 13px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    input[type="search"] {
+      width: min(460px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 10px 12px;
+      font: inherit;
+    }
+
+    @media (max-width: 900px) {
+      .summary {
+        grid-template-columns: repeat(2, minmax(140px, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>DracoBench v0.1-hard: moonshotai/kimi-k2.7-code</h1>
+    <div class="model">moonshotai/kimi-k2.7-code</div>
+  </header>
+  <div class="summary">
+    <div class="metric"><div class="label">Pass rate</div><div class="value">94.0%</div></div>
+    <div class="metric"><div class="label">Cases</div><div class="value">47/50</div></div>
+    <div class="metric"><div class="label">Avg latency</div><div class="value">7768 ms</div></div>
+    <div class="metric"><div class="label">Total cost</div><div class="value">$0.046539</div></div>
+    <div class="metric"><div class="label">Prompt tokens</div><div class="value">4040</div></div>
+    <div class="metric"><div class="label">Completion tokens</div><div class="value">11125</div></div>
+    <div class="metric"><div class="label">Reasoning tokens</div><div class="value">9900</div></div>
+    <div class="metric"><div class="label">Errors</div><div class="value">0</div></div>
+  </div>
+  <main>
+    <section>
+      <h2>By Suite</h2>
+      <table>
+        <thead><tr><th>Suite</th><th>Cases</th><th>Passed</th><th>Pass rate</th><th>Avg latency</th><th>Cost</th></tr></thead>
+        <tbody><tr data-suite="chinese_writing"><td><code>chinese_writing</code></td><td>4</td><td>4</td><td>100.0%</td><td>10775 ms</td><td>$0.004167</td></tr>
+<tr data-suite="coding"><td><code>coding</code></td><td>10</td><td>10</td><td>100.0%</td><td>9620 ms</td><td>$0.012721</td></tr>
+<tr data-suite="debugging"><td><code>debugging</code></td><td>8</td><td>7</td><td>87.5%</td><td>9411 ms</td><td>$0.011835</td></tr>
+<tr data-suite="instruction_following"><td><code>instruction_following</code></td><td>7</td><td>6</td><td>85.7%</td><td>5735 ms</td><td>$0.006185</td></tr>
+<tr data-suite="knowledge"><td><code>knowledge</code></td><td>8</td><td>8</td><td>100.0%</td><td>5658 ms</td><td>$0.002774</td></tr>
+<tr data-suite="rag_long_context"><td><code>rag_long_context</code></td><td>3</td><td>3</td><td>100.0%</td><td>10007 ms</td><td>$0.001843</td></tr>
+<tr data-suite="reasoning"><td><code>reasoning</code></td><td>10</td><td>9</td><td>90.0%</td><td>5838 ms</td><td>$0.007014</td></tr></tbody>
+      </table>
+    </section>
+    <section>
+      <h2>Failure Examples</h2>
+      <div class="failures"><article class="failure" data-suite="reasoning">
+  <h3>hard-reasoning-005</h3>
+  <div>Suite: <code>reasoning</code></div>
+  <div>Finish: <code>stop</code></div>
+  <pre>{
+  &quot;matched&quot;: []
+}</pre>
+  <pre>甲、丙</pre>
+</article>
+<article class="failure" data-suite="debugging">
+  <h3>hard-debugging-001</h3>
+  <div>Suite: <code>debugging</code></div>
+  <div>Finish: <code>length</code></div>
+  <pre>{
+  &quot;pattern&quot;: &quot;FIX:\\s*`?\\s*def\\s+add_item\\(x,\\s*items=None\\)\\s*:&quot;
+}</pre>
+  <pre></pre>
+</article>
+<article class="failure" data-suite="instruction_following">
+  <h3>hard-if-004</h3>
+  <div>Suite: <code>instruction_following</code></div>
+  <div>Finish: <code>stop</code></div>
+  <pre>{
+  &quot;expected&quot;: &quot;模型-评测-需要-可复现&quot;,
+  &quot;actual&quot;: &quot;model-evaluation-needs-reproducible&quot;
+}</pre>
+  <pre>model-evaluation-needs-reproducible</pre>
+</article></div>
+    </section>
+    <section>
+      <h2>Case Details</h2>
+      <div class="controls">
+        <input id="search" type="search" placeholder="Search case id, suite, output">
+      </div>
+      <table id="case-table">
+        <thead><tr><th>Case</th><th>Suite</th><th>Status</th><th>Score</th><th>Latency</th><th>Cost</th><th>Finish</th></tr></thead>
+        <tbody><tr data-suite="knowledge"><td><code>hard-knowledge-001</code></td><td>knowledge</td><td class="status-pass">PASS</td><td>1.0</td><td>8024 ms</td><td>$0.000236</td><td>stop</td></tr>
+<tr data-suite="knowledge"><td><code>hard-knowledge-002</code></td><td>knowledge</td><td class="status-pass">PASS</td><td>1.0</td><td>4212 ms</td><td>$0.000570</td><td>stop</td></tr>
+<tr data-suite="knowledge"><td><code>hard-knowledge-003</code></td><td>knowledge</td><td class="status-pass">PASS</td><td>1.0</td><td>4281 ms</td><td>$0.000547</td><td>stop</td></tr>
+<tr data-suite="knowledge"><td><code>hard-knowledge-004</code></td><td>knowledge</td><td class="status-pass">PASS</td><td>1.0</td><td>2668 ms</td><td>$0.000302</td><td>stop</td></tr>
+<tr data-suite="knowledge"><td><code>hard-knowledge-005</code></td><td>knowledge</td><td class="status-pass">PASS</td><td>1.0</td><td>2739 ms</td><td>$0.000264</td><td>stop</td></tr>
+<tr data-suite="knowledge"><td><code>hard-knowledge-006</code></td><td>knowledge</td><td class="status-pass">PASS</td><td>1.0</td><td>1899 ms</td><td>$0.000249</td><td>stop</td></tr>
+<tr data-suite="knowledge"><td><code>hard-knowledge-007</code></td><td>knowledge</td><td class="status-pass">PASS</td><td>1.0</td><td>8983 ms</td><td>$0.000332</td><td>stop</td></tr>
+<tr data-suite="knowledge"><td><code>hard-knowledge-008</code></td><td>knowledge</td><td class="status-pass">PASS</td><td>1.0</td><td>12458 ms</td><td>$0.000274</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>hard-reasoning-001</code></td><td>reasoning</td><td class="status-pass">PASS</td><td>1.0</td><td>13200 ms</td><td>$0.000411</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>hard-reasoning-002</code></td><td>reasoning</td><td class="status-pass">PASS</td><td>1.0</td><td>2962 ms</td><td>$0.000877</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>hard-reasoning-003</code></td><td>reasoning</td><td class="status-pass">PASS</td><td>1.0</td><td>2026 ms</td><td>$0.000394</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>hard-reasoning-004</code></td><td>reasoning</td><td class="status-pass">PASS</td><td>1.0</td><td>3791 ms</td><td>$0.000548</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>hard-reasoning-005</code></td><td>reasoning</td><td class="status-fail">FAIL</td><td>0.0</td><td>7661 ms</td><td>$0.001763</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>hard-reasoning-006</code></td><td>reasoning</td><td class="status-pass">PASS</td><td>1.0</td><td>16693 ms</td><td>$0.001331</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>hard-reasoning-007</code></td><td>reasoning</td><td class="status-pass">PASS</td><td>1.0</td><td>1915 ms</td><td>$0.000497</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>hard-reasoning-008</code></td><td>reasoning</td><td class="status-pass">PASS</td><td>1.0</td><td>2689 ms</td><td>$0.000344</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>hard-reasoning-009</code></td><td>reasoning</td><td class="status-pass">PASS</td><td>1.0</td><td>4921 ms</td><td>$0.000458</td><td>stop</td></tr>
+<tr data-suite="reasoning"><td><code>hard-reasoning-010</code></td><td>reasoning</td><td class="status-pass">PASS</td><td>1.0</td><td>2522 ms</td><td>$0.000391</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>hard-coding-001</code></td><td>coding</td><td class="status-pass">PASS</td><td>1.0</td><td>4276 ms</td><td>$0.001058</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>hard-coding-002</code></td><td>coding</td><td class="status-pass">PASS</td><td>1.0</td><td>8133 ms</td><td>$0.000848</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>hard-coding-003</code></td><td>coding</td><td class="status-pass">PASS</td><td>1.0</td><td>4764 ms</td><td>$0.000908</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>hard-coding-004</code></td><td>coding</td><td class="status-pass">PASS</td><td>1.0</td><td>6304 ms</td><td>$0.001193</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>hard-coding-005</code></td><td>coding</td><td class="status-pass">PASS</td><td>1.0</td><td>20878 ms</td><td>$0.001531</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>hard-coding-006</code></td><td>coding</td><td class="status-pass">PASS</td><td>1.0</td><td>14887 ms</td><td>$0.002489</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>hard-coding-007</code></td><td>coding</td><td class="status-pass">PASS</td><td>1.0</td><td>20205 ms</td><td>$0.001241</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>hard-coding-008</code></td><td>coding</td><td class="status-pass">PASS</td><td>1.0</td><td>6881 ms</td><td>$0.001293</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>hard-coding-009</code></td><td>coding</td><td class="status-pass">PASS</td><td>1.0</td><td>6479 ms</td><td>$0.001179</td><td>stop</td></tr>
+<tr data-suite="coding"><td><code>hard-coding-010</code></td><td>coding</td><td class="status-pass">PASS</td><td>1.0</td><td>3392 ms</td><td>$0.000979</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>hard-debugging-001</code></td><td>debugging</td><td class="status-fail">FAIL</td><td>0.0</td><td>31466 ms</td><td>$0.004182</td><td>length</td></tr>
+<tr data-suite="debugging"><td><code>hard-debugging-002</code></td><td>debugging</td><td class="status-pass">PASS</td><td>1.0</td><td>4836 ms</td><td>$0.000873</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>hard-debugging-003</code></td><td>debugging</td><td class="status-pass">PASS</td><td>1.0</td><td>9106 ms</td><td>$0.001298</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>hard-debugging-004</code></td><td>debugging</td><td class="status-pass">PASS</td><td>1.0</td><td>6049 ms</td><td>$0.001041</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>hard-debugging-005</code></td><td>debugging</td><td class="status-pass">PASS</td><td>1.0</td><td>5758 ms</td><td>$0.000828</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>hard-debugging-006</code></td><td>debugging</td><td class="status-pass">PASS</td><td>1.0</td><td>2572 ms</td><td>$0.000662</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>hard-debugging-007</code></td><td>debugging</td><td class="status-pass">PASS</td><td>1.0</td><td>3110 ms</td><td>$0.000884</td><td>stop</td></tr>
+<tr data-suite="debugging"><td><code>hard-debugging-008</code></td><td>debugging</td><td class="status-pass">PASS</td><td>1.0</td><td>12388 ms</td><td>$0.002068</td><td>stop</td></tr>
+<tr data-suite="instruction_following"><td><code>hard-if-001</code></td><td>instruction_following</td><td class="status-pass">PASS</td><td>1.0</td><td>3323 ms</td><td>$0.000603</td><td>stop</td></tr>
+<tr data-suite="instruction_following"><td><code>hard-if-002</code></td><td>instruction_following</td><td class="status-pass">PASS</td><td>1.0</td><td>11388 ms</td><td>$0.002075</td><td>stop</td></tr>
+<tr data-suite="instruction_following"><td><code>hard-if-003</code></td><td>instruction_following</td><td class="status-pass">PASS</td><td>1.0</td><td>2154 ms</td><td>$0.000356</td><td>stop</td></tr>
+<tr data-suite="instruction_following"><td><code>hard-if-004</code></td><td>instruction_following</td><td class="status-fail">FAIL</td><td>0.0</td><td>4918 ms</td><td>$0.001489</td><td>stop</td></tr>
+<tr data-suite="instruction_following"><td><code>hard-if-005</code></td><td>instruction_following</td><td class="status-pass">PASS</td><td>1.0</td><td>10785 ms</td><td>$0.000282</td><td>stop</td></tr>
+<tr data-suite="instruction_following"><td><code>hard-if-006</code></td><td>instruction_following</td><td class="status-pass">PASS</td><td>1.0</td><td>3363 ms</td><td>$0.000696</td><td>stop</td></tr>
+<tr data-suite="instruction_following"><td><code>hard-if-007</code></td><td>instruction_following</td><td class="status-pass">PASS</td><td>1.0</td><td>4216 ms</td><td>$0.000683</td><td>stop</td></tr>
+<tr data-suite="chinese_writing"><td><code>hard-zh-writing-001</code></td><td>chinese_writing</td><td class="status-pass">PASS</td><td>1.0</td><td>2689 ms</td><td>$0.000702</td><td>stop</td></tr>
+<tr data-suite="chinese_writing"><td><code>hard-zh-writing-002</code></td><td>chinese_writing</td><td class="status-pass">PASS</td><td>1.0</td><td>6991 ms</td><td>$0.001407</td><td>stop</td></tr>
+<tr data-suite="chinese_writing"><td><code>hard-zh-writing-003</code></td><td>chinese_writing</td><td class="status-pass">PASS</td><td>1.0</td><td>17069 ms</td><td>$0.001096</td><td>stop</td></tr>
+<tr data-suite="chinese_writing"><td><code>hard-zh-writing-004</code></td><td>chinese_writing</td><td class="status-pass">PASS</td><td>1.0</td><td>16352 ms</td><td>$0.000963</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>hard-rag-001</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td>1.0</td><td>3237 ms</td><td>$0.000577</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>hard-rag-002</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td>1.0</td><td>3471 ms</td><td>$0.000820</td><td>stop</td></tr>
+<tr data-suite="rag_long_context"><td><code>hard-rag-003</code></td><td>rag_long_context</td><td class="status-pass">PASS</td><td>1.0</td><td>23313 ms</td><td>$0.000445</td><td>stop</td></tr></tbody>
+      </table>
+    </section>
+  </main>
+  <script>
+    const search = document.querySelector('#search');
+    const rows = [...document.querySelectorAll('#case-table tbody tr')];
+    search.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      for (const row of rows) {
+        row.style.display = !query || row.textContent.toLowerCase().includes(query) ? '' : 'none';
+      }
+    });
+  </script>
+</body>
+</html>
