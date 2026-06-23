@@ -23,6 +23,12 @@ DracoBench 是一套个人向的大模型评测工具，目标不是再造一个
 OPENROUTER_API_KEY=sk-or-v1-...
 ```
 
+如果要通过火山引擎 Ark Responses API 跑模型，还需要：
+
+```bash
+VOLCENGINE_API_KEY=...
+```
+
 验证样例用例：
 
 ```bash
@@ -50,6 +56,15 @@ PYTHONPATH=src python3 -m dracobench review-html \
 ```bash
 PYTHONPATH=src python3 -m dracobench run \
   --model <openrouter-model-slug> \
+  --cases cases/v0.1/smoke.jsonl
+```
+
+通过火山引擎 Ark 跑一次 benchmark：
+
+```bash
+PYTHONPATH=src python3 -m dracobench run \
+  --backend volcengine-ark \
+  --model doubao-seed-2-1-pro-260628 \
   --cases cases/v0.1/smoke.jsonl
 ```
 

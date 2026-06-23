@@ -1120,7 +1120,7 @@ def _render_qa_card(record: dict[str, Any]) -> str:
     prompt = str(record.get("prompt", "")).strip()
     output = str(record.get("output", "")).strip()
     expected_block = _render_expected_block(record)
-    analysis_block = _render_analysis_block(record) if not passed or record.get("error") else ""
+    analysis_block = _render_analysis_block(record) if not passed or record.get("error") or _has_manual_review_override(record) else ""
     case_id = str(record.get("case_id", "unknown"))
     suite = str(record.get("suite", "unknown"))
     latency = record.get("latency_ms")
@@ -1169,9 +1169,10 @@ def _render_failure_card(record: dict[str, Any]) -> str:
 
 def _render_analysis_block(record: dict[str, Any], analysis: str | None = None) -> str:
     failure_type = _failure_type(record)
+    label = "Manual Review" if _has_manual_review_override(record) else "Mistake Analysis"
     explanation = analysis if analysis is not None else explain_failure(record)
     return f"""
-    <div class="failure-label">Mistake Analysis</div>
+    <div class="failure-label">{label}</div>
     <div class="analysis">
       <div><strong>Failure type:</strong> <code>{_escape(failure_type)}</code></div>
       <div>{_escape(explanation)}</div>
@@ -1242,6 +1243,12 @@ def explain_failure(record: dict[str, Any]) -> str:
 
     score = record.get("score") or {}
     details = score.get("details") or {}
+    if details.get("manual_review_override"):
+        reason = str(details.get("reason") or "").strip()
+        if reason:
+            return reason
+        return "这道题原始 scorer 判为失败，但人工复核认为模型答案满足题意，因此在 rescored 结果中改判通过。"
+
     prompt = str(record.get("prompt") or "")
     output = str(record.get("output") or "")
     stderr = str(details.get("stderr") or "")
@@ -1365,6 +1372,8 @@ def explain_failure(record: dict[str, Any]) -> str:
 def _failure_type(record: dict[str, Any]) -> str:
     if record.get("failure_type"):
         return str(record["failure_type"])
+    if _has_manual_review_override(record):
+        return "manual_review_override"
     if not record.get("error") and record.get("score", {}).get("passed"):
         return "pass"
     if record.get("error"):
@@ -1424,6 +1433,11 @@ def _failure_type(record: dict[str, Any]) -> str:
         return "code_execution_failure"
 
     return "scorer_miss"
+
+
+def _has_manual_review_override(record: dict[str, Any]) -> bool:
+    details = (record.get("score") or {}).get("details") or {}
+    return bool(details.get("manual_review_override"))
 
 
 def _json_failure_type(record: dict[str, Any]) -> str:

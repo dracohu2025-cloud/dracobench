@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 
-def load_dotenv(path: Path | str = ".env") -> None:
+def load_dotenv(path: Path | str = ".env", override: bool = False) -> None:
     env_path = Path(path)
     if not env_path.exists():
         return
@@ -21,7 +21,7 @@ def load_dotenv(path: Path | str = ".env") -> None:
         key, value = line.split("=", 1)
         key = key.strip()
         value = value.strip().strip("'\"")
-        if key and key not in os.environ:
+        if key and (override or key not in os.environ):
             os.environ[key] = value
 
 
@@ -49,3 +49,15 @@ def get_openrouter_headers() -> dict[str, str]:
         headers["X-OpenRouter-Title"] = title
     return headers
 
+
+def get_volcengine_api_key() -> str:
+    load_dotenv(override=True)
+    key = os.getenv("VOLCENGINE_API_KEY")
+    if not key:
+        raise RuntimeError("VOLCENGINE_API_KEY is not set. Add it to .env or the shell environment.")
+    return key
+
+
+def get_volcengine_base_url() -> str:
+    load_dotenv()
+    return os.getenv("VOLCENGINE_BASE_URL", "https://ark.cn-beijing.volces.com/api/v3").rstrip("/")

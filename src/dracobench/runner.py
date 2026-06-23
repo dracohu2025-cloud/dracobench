@@ -10,6 +10,7 @@ from typing import Any
 from .models import Case
 from .openrouter import OpenRouterClient, OpenRouterError, extract_text
 from .scorers import score_response
+from .volcengine import VolcengineArkClient, VolcengineArkError
 
 DEFAULT_SYSTEM_PROMPT = (
     "You are participating in DracoBench, a model evaluation suite. "
@@ -26,8 +27,9 @@ def run_cases(
     max_tokens: int = 1024,
     seed: int | None = None,
     sleep_seconds: float = 0,
+    backend: str = "openrouter",
 ) -> list[dict[str, Any]]:
-    client = OpenRouterClient()
+    client = _build_client(backend)
     out_path = Path(output_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     records: list[dict[str, Any]] = []
@@ -42,6 +44,7 @@ def run_cases(
                 temperature=temperature,
                 max_tokens=max_tokens,
                 seed=seed,
+                backend=backend,
             )
             records.append(record)
             handle.write(json.dumps(record, ensure_ascii=False) + "\n")
@@ -53,13 +56,14 @@ def run_cases(
 
 
 def run_one_case(
-    client: OpenRouterClient,
+    client: OpenRouterClient | VolcengineArkClient,
     case: Case,
     model: str,
     provider: dict[str, Any] | None,
     temperature: float,
     max_tokens: int,
     seed: int | None,
+    backend: str = "openrouter",
 ) -> dict[str, Any]:
     effective_temperature = case.temperature if case.temperature is not None else temperature
     effective_max_tokens = case.max_tokens if case.max_tokens is not None else max_tokens
@@ -88,6 +92,7 @@ def run_one_case(
         "expected": case.expected,
         "model": model,
         "provider": provider,
+        "backend": backend,
         "prompt": case.prompt,
         "parameters": {
             "temperature": effective_temperature,
@@ -116,7 +121,7 @@ def run_one_case(
             },
             "error": None,
         }
-    except OpenRouterError as exc:
+    except (OpenRouterError, VolcengineArkError) as exc:
         return {
             **base_record,
             "latency_ms": None,
@@ -126,7 +131,7 @@ def run_one_case(
             "finish_reason": None,
             "score": {"passed": False, "score": 0.0, "details": {}},
             "error": {
-                "type": "openrouter_error",
+                "type": _provider_error_type(exc),
                 "status_code": exc.status_code,
                 "message": str(exc),
                 "body": exc.body,
@@ -153,3 +158,17 @@ def _finish_reason(response: dict[str, Any]) -> str | None:
     if not choices:
         return None
     return choices[0].get("finish_reason")
+
+
+def _build_client(backend: str) -> OpenRouterClient | VolcengineArkClient:
+    if backend == "openrouter":
+        return OpenRouterClient()
+    if backend == "volcengine-ark":
+        return VolcengineArkClient()
+    raise ValueError(f"unknown backend: {backend}")
+
+
+def _provider_error_type(exc: OpenRouterError | VolcengineArkError) -> str:
+    if isinstance(exc, VolcengineArkError):
+        return "volcengine_ark_error"
+    return "openrouter_error"

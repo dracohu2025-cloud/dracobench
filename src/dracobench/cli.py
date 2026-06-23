@@ -25,9 +25,10 @@ def main(argv: list[str] | None = None) -> None:
     list_parser.add_argument("--suite", action="append", default=[])
     list_parser.add_argument("--limit", type=int)
 
-    run_parser = subparsers.add_parser("run", help="Run benchmark cases through OpenRouter.")
+    run_parser = subparsers.add_parser("run", help="Run benchmark cases through a model backend.")
     run_parser.add_argument("--model", required=True)
     run_parser.add_argument("--cases", required=True)
+    run_parser.add_argument("--backend", choices=["openrouter", "volcengine-ark"], default="openrouter")
     run_parser.add_argument("--suite", action="append", default=[])
     run_parser.add_argument("--limit", type=int)
     run_parser.add_argument("--out")
@@ -81,6 +82,8 @@ def main(argv: list[str] | None = None) -> None:
         report_path = Path(args.report or default_report_path(args.model))
         html_report_path = Path(args.html_report or default_html_report_path(args.model))
         provider = build_provider_config(args)
+        if args.backend != "openrouter" and provider:
+            raise SystemExit("provider routing options are only supported with --backend openrouter")
         records = run_cases(
             cases=cases,
             model=args.model,
@@ -90,6 +93,7 @@ def main(argv: list[str] | None = None) -> None:
             max_tokens=args.max_tokens,
             seed=args.seed,
             sleep_seconds=args.sleep,
+            backend=args.backend,
         )
         write_markdown_report(records, report_path)
         write_html_report(records, html_report_path, title=f"DracoBench Report: {args.model}")
