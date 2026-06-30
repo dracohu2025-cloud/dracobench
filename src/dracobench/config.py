@@ -26,7 +26,7 @@ def load_dotenv(path: Path | str = ".env", override: bool = False) -> None:
 
 
 def get_openrouter_api_key() -> str:
-    load_dotenv()
+    load_dotenv(override=True)
     key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENROUTER_KEY")
     if not key:
         raise RuntimeError("OPENROUTER_API_KEY is not set. Add it to .env or the shell environment.")
